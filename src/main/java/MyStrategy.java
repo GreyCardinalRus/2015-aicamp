@@ -175,10 +175,10 @@ public final class MyStrategy implements Strategy {
 				move.setSpeedUp(1.0D);
 				move.setTurn(needTurn);
 			} else if (PI / 2 < needTurn) {
-				move.setTurn(PI - needTurn);
+				move.setTurn( needTurn-PI);
 				move.setSpeedUp(-1.0D);
 			} else if (-PI / 2 > needTurn) {
-				move.setTurn(PI - needTurn);
+				move.setTurn( needTurn+PI);
 				move.setSpeedUp(-1.0D);
 			}
 		}
