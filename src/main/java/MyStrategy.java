@@ -2,7 +2,7 @@ import model.*;
 import static java.lang.StrictMath.*;
 
 public final class MyStrategy implements Strategy {
-	private static final double STRIKE_ANGLE = 1.0D * PI / 180.0D;
+	private static final double STRIKE_ANGLE = 2.0D * PI / 180.0D;
 	private Hockeyist isForward = null;
 	private Hockeyist isMiddle = null;
 	private Hockeyist isGuard = null;
@@ -17,7 +17,8 @@ public final class MyStrategy implements Strategy {
 	private Hockeyist oponentGOALIE = null;
 	private Hockeyist nearestOpponent = null;
 	private boolean opponentForStrike = false;
-	private Hockeyist dangerOponent  = null;
+	private Hockeyist dangerOponent = null;
+	private boolean puckOnOpponentSize = false;
 
 	double guardPointX = 0, guardPointY = 0;
 
@@ -66,11 +67,53 @@ public final class MyStrategy implements Strategy {
 	/**
 	 * @return Действия владеющего шайбой
 	 */
+	private boolean doItPass(Hockeyist self, World world, Game game, Move move,
+			Hockeyist passTo) {
+
+		double angleToPass = self.getAngleTo(passTo);
+		boolean passTrue = true;
+
+		for (Hockeyist hockeyist : world.getHockeyists()) {
+			if (hockeyist.isTeammate()
+					|| hockeyist.getType() == HockeyistType.GOALIE
+					|| hockeyist.getState() == HockeyistState.KNOCKED_DOWN
+					|| hockeyist.getState() == HockeyistState.RESTING) {
+				continue;
+			}
+
+			if (sin(self.getAngleTo(hockeyist)) * self.getDistanceTo(hockeyist) < hockeyist
+					.getRadius())
+				passTrue = false;
+		}
+		if (passTrue) {
+			move.setSpeedUp(1.0D);
+			move.setPassAngle(self.getAngleTo(passTo));
+			move.setAction(ActionType.PASS);
+		} else {
+			move.setSpeedUp(1.0D);
+			move.setTurn(self.getAngleTo(passTo.getX(), world.getHeight()
+					- passTo.getY()));
+			move.setAction(ActionType.NONE);
+		}
+		return false;
+	}
+
+	/**
+	 * @return Действия владеющего шайбой
+	 */
 	private boolean doItPuckOwner(Hockeyist self, World world, Game game,
 			Move move) {
 		if (self.getStamina() >= game.getStrikeStaminaBaseCost()
 				&& opponentForStrike) {
-			move.setAction(ActionType.STRIKE);
+			if (self.getState() != HockeyistState.SWINGING) {// STabs(angleToNet)
+																// >
+																// STRIKE_ANGLE
+																// * 3) {
+				move.setAction(ActionType.SWING); // return true;
+			} else // if(self.getStamina() <= game.getStrikeStaminaBaseCost())
+			{
+				move.setAction(ActionType.STRIKE); // return true;
+			}
 			return true;
 		}
 		if (world.getPuck().getOwnerHockeyistId() != self.getId())
@@ -80,11 +123,9 @@ public final class MyStrategy implements Strategy {
 				- areaForStrikeToGateX, self.getY() - areaForStrikeToGateY))
 		// форвард ближе чем я! Отдам ему пас!
 		{
-			move.setSpeedUp(1.0D);
-			move.setPassAngle(self.getAngleTo(isForward));
-			move.setAction(ActionType.PASS);
+			doItPass(self, world, game, move, isForward);
 
-			//System.out.println("pass");
+			// System.out.println("pass");
 			return true;
 			// Мы в своей половине
 		} else if (abs(self.getX() - oponentGOALIE.getX()) > world.getWidth() * 0.4d) {
@@ -92,14 +133,22 @@ public final class MyStrategy implements Strategy {
 			return myMoveTo(self, world, game, move, areaForStrikeToGateX,
 					areaForStrikeToGateY, true);
 			// }
+		} else if (self.getAngleTo(opponentGateX, opponentGateY) > STRIKE_ANGLE) {
+			move.setSpeedUp(1.0D);
+			move.setTurn(self.getAngleTo(opponentGateX, opponentGateY));
+			return true;
+		}
 
-		} else {
+		else {
 			// мы в зоне удара!
 			double angleToNet = self.getAngleTo(opponentGateX, opponentGateY);
 			move.setSpeedUp(1.0D);
 			move.setTurn(angleToNet);
-			if (abs(angleToNet) > STRIKE_ANGLE * 3) {
-				move.setAction(ActionType.NONE);// .SWING); //return true;
+			if (self.getState() != HockeyistState.SWINGING) {// STabs(angleToNet)
+																// >
+																// STRIKE_ANGLE
+																// * 3) {
+				move.setAction(ActionType.SWING); // return true;
 			} else // if(self.getStamina() <= game.getStrikeStaminaBaseCost())
 			{
 				move.setAction(ActionType.STRIKE); // return true;
@@ -127,16 +176,19 @@ public final class MyStrategy implements Strategy {
 	private boolean doItGuard(Hockeyist self, World world, Game game, Move move) {
 		if (world.getPuck().getOwnerPlayerId() == self.getPlayerId()) {
 			// Шайба у наших, подходим ближе к центру своей половины
-			return myMoveTo(self, world, game, move, guardPointX, guardPointY, false);
+			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
+					false);
 
-//		} else if (world.getPuck().getOwnerPlayerId() != -1) {
-//			// Шайба у противника прижимаемся
-//			return myMoveTo(self, world, game, move, guardPointX, guardPointY, false);
+			// } else if (world.getPuck().getOwnerPlayerId() != -1) {
+			// // Шайба у противника прижимаемся
+			// return myMoveTo(self, world, game, move, guardPointX,
+			// guardPointY, false);
 
-		} else if (abs(world.getPuck().getX() - self.getX()) < world.getWidth() / 4) {
+		} else if (!puckOnOpponentSize) {
 			return myMoveTo(self, world, game, move, world.getPuck(), true);
 		} else {
-			return myMoveTo(self, world, game, move, guardPointX, guardPointY, false);
+			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
+					false);
 		}
 	}
 
@@ -159,9 +211,11 @@ public final class MyStrategy implements Strategy {
 	 */
 	private boolean myMoveTo(Hockeyist self, World world, Game game, Move move,
 			double moveToX, double moveToY, boolean isHard) {
-		if(hypot(self.getX()-moveToX,self.getY()-moveToY)<self.getRadius()*2.0D){
-			move.setTurn(self.getAngleTo(oponentGOALIE));
-			if(hypot(self.getSpeedX(),self.getSpeedY())>0.5d) move.setSpeedUp(-1.0D);
+		if (hypot(self.getX() - moveToX, self.getY() - moveToY) < self
+				.getRadius() * 2.0D) {
+			move.setTurn(self.getAngleTo(opponentGateX, opponentGateY));
+			if (hypot(self.getSpeedX(), self.getSpeedY()) > 0.5d)
+				move.setSpeedUp(-1.0D);
 			return true;
 		}
 		// Мы на левой или правой половине поля?
@@ -174,10 +228,10 @@ public final class MyStrategy implements Strategy {
 				move.setSpeedUp(1.0D);
 				move.setTurn(needTurn);
 			} else if (PI / 2 < needTurn) {
-				move.setTurn( needTurn-PI);
+				move.setTurn(needTurn - PI);
 				move.setSpeedUp(-1.0D);
 			} else if (-PI / 2 > needTurn) {
-				move.setTurn( needTurn+PI);
+				move.setTurn(needTurn + PI);
 				move.setSpeedUp(-1.0D);
 			}
 		}
@@ -191,18 +245,16 @@ public final class MyStrategy implements Strategy {
 			Move move) {
 		if (world.getPuck().getOwnerPlayerId() == self.getPlayerId()) {
 			// Шайба у наших, подходим ближе к центру своей половины
-			return myMoveTo(self, world, game, move, 0.5D*(areaForStrikeToGateX+world.getWidth()),
-					areaForStrikeToGateY, false);
+			return myMoveTo(self, world, game, move,
+					1.0D * (areaForStrikeToGateX), areaForStrikeToGateY, false);
 
 		} else {
-			if ((self.getX() > opponentGateX && world.getPuck().getX() < world
-					.getWidth() / 2)
-					|| self.getX() < opponentGateX
-					&& world.getPuck().getX() > world.getWidth() / 2) {
+			if (puckOnOpponentSize) {
 				return myMoveTo(self, world, game, move, world.getPuck(), false);
 
 			} else {
-				return myMoveTo(self, world, game, move, 0.5D*(areaForStrikeToGateX+world.getWidth()),
+				return myMoveTo(self, world, game, move,
+						1.0D * (areaForStrikeToGateX + 0 * world.getWidth()),
 						areaForStrikeToGateY, false);
 
 			}
@@ -321,15 +373,13 @@ public final class MyStrategy implements Strategy {
 			}
 			if (self.getDistanceTo(hockeyist) <= game.getStickLength()
 					&& abs(self.getAngleTo(hockeyist)) < 0.5D * game
-							.getStickSector()) 
+							.getStickSector())
 				opponentForStrike = true;
 			if (hockeyist.getDistanceTo(self) <= game.getStickLength()
 					&& abs(hockeyist.getAngleTo(self)) < 0.5D * game
-							.getStickSector()
-							) 
+							.getStickSector())
 				dangerOponent = hockeyist;
 
-			
 		}
 
 		opponentGateX = 0.5D * (opponentPlayer.getNetBack() + opponentPlayer
@@ -339,9 +389,12 @@ public final class MyStrategy implements Strategy {
 		opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
 				* game.getGoalNetHeight();
 
-		areaForStrikeToGateX = opponentGateX
-				+ (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
-						: DIST2STRIKE);
+		puckOnOpponentSize = (opponentPlayer.getNetBack() < world.getWidth() / 2 ? world
+				.getPuck().getX() < world.getWidth() / 2 : world.getPuck()
+				.getX() > world.getWidth() / 2);
+		areaForStrikeToGateX = world.getWidth() / 2;// opponentGateX
+		// + (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
+		// : DIST2STRIKE);
 		areaForStrikeToGateY = opponentGateY
 				+ 1.1D
 				* (self.getY() < (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
