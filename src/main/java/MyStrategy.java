@@ -9,6 +9,7 @@ public final class MyStrategy implements Strategy {
 	private Player opponentPlayer = null;
     
 	private double mySpeed=0.5D;
+	private static double correctAngleK =10;
 	
 	final static int DIST2STRIKE = 300;
 	static int isDebugFull = 100;
@@ -208,9 +209,9 @@ public final class MyStrategy implements Strategy {
 			Unit unit, boolean isHard, double nearArea) {
 		double newX = unit.getX(), newY = unit.getY();
 		if (unit.getId() == world.getPuck().getId()) { // calc traectori!
-			 newX+=unit.getSpeedX()*100; newY+=unit.getSpeedY()*100;
+			 newX+=unit.getSpeedX()*correctAngleK; newY+=unit.getSpeedY()*correctAngleK;
 			 move.setSpeedUp(1.0D);
-			 move.setTurn(self.getAngleTo(unit));
+			 move.setTurn(self.getAngleTo(newX,newY));
 			 return true;
 		}
 		else
