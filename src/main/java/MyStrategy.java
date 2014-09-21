@@ -153,8 +153,8 @@ public final class MyStrategy implements Strategy {
 				(doItPass(self, world, game, move, isForward, true)) return true;
 			// Мы в своей половине
 		} //else 
-		if (hypot(self.getX() - areaForStrikeToGateXP, self.getY()
-				- areaForStrikeToGateYP) > self.getRadius()*5) {
+		if (abs(self.getX() - areaForStrikeToGateXP)>self.getRadius()*3&& abs(self.getY()
+				- areaForStrikeToGateYP) > self.getRadius()*1) {
 
 			return myMoveTo(self, world, game, move, areaForStrikeToGateXP,
 					areaForStrikeToGateYP, false,self.getRadius());
