@@ -11,7 +11,7 @@ public final class MyStrategy implements Strategy {
 	private double mySpeed=0.5D;
 	private static double correctAngleK =10;
 	
-	final static int DIST2STRIKE = 200;
+	final static int DIST2STRIKE = 100;
 	static int isDebugFull = 1;
 	static boolean isDebugMove = true;
 
@@ -36,7 +36,7 @@ public final class MyStrategy implements Strategy {
 		calculateCommonVars(self, world, game, move);
 
 		defineRoles(self, world);
-		if (opponentForStrike&&self.getState() != HockeyistState.SWINGING) {
+		if (world.getPuck().getOwnerHockeyistId() != self.getId()&&opponentForStrike&&self.getState() != HockeyistState.SWINGING) {
 			move.setAction(ActionType.SWING);
 			return;
 		}
@@ -105,10 +105,10 @@ public final class MyStrategy implements Strategy {
 					continue;
 				}
 
-				if (sin(self.getAngleTo(hockeyist)-angleToPass)
-						* self.getDistanceTo(hockeyist)< game.getStickLength()
-						&&self.getDistanceTo(hockeyist)> 2*self.getRadius())// game.getStickLength())
-					passTrue = false;
+//				if (sin(self.getAngleTo(hockeyist)-angleToPass)
+//						* self.getDistanceTo(hockeyist)< game.getStickLength()
+//						&&self.getDistanceTo(hockeyist)> 2*self.getRadius())// game.getStickLength())
+//					passTrue = false;
 			}
 			if (passTrue) {
 				//move.setSpeedUp(mySpeed);
@@ -141,19 +141,19 @@ public final class MyStrategy implements Strategy {
 			
 			return false;
 		}
-		if ((hypot(isForward.getX() - areaForStrikeToGateXP, isForward.getY()
-				- areaForStrikeToGateYP) < hypot(self.getX()
-				- areaForStrikeToGateXP, self.getY() - areaForStrikeToGateYP))||
-				hypot(isForward.getX() - areaForStrikeToGateXS, isForward.getY()
-						- areaForStrikeToGateYS) < hypot(self.getX()
-						- areaForStrikeToGateXP, self.getY() - areaForStrikeToGateYP))
+		if ((hypot(isForward.getX() - areaForStrikeToGateXP, (isForward.getY()
+				- areaForStrikeToGateYP)/3) < hypot(self.getX()
+				- areaForStrikeToGateXP,( self.getY() - areaForStrikeToGateYP)/3))||
+				hypot(isForward.getX() - areaForStrikeToGateXS, (isForward.getY()
+						- areaForStrikeToGateYS)/3) < hypot(self.getX()
+						- areaForStrikeToGateXP, (self.getY() - areaForStrikeToGateYP)/3))
 		// форвард ближе чем я! Отдам ему пас!
 		{
 			if //(passTrue)
 				(doItPass(self, world, game, move, isForward, true)) return true;
 			// Мы в своей половине
 		} //else 
-		if (abs(self.getX() - areaForStrikeToGateXP)>self.getRadius()*3&& abs(self.getY()
+		if (abs(self.getX() - areaForStrikeToGateXP)>self.getRadius()*3|| abs(self.getY()
 				- areaForStrikeToGateYP) > self.getRadius()*1) {
 
 			return myMoveTo(self, world, game, move, areaForStrikeToGateXP,
@@ -198,8 +198,10 @@ public final class MyStrategy implements Strategy {
 			// guardPointY, false);
 
 		} else if (puckOnMySide&&world.getPuck().getOwnerPlayerId() != -1&&world.getPuck().getOwnerPlayerId() != self.getPlayerId()) {
+			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
+					false,self.getRadius());
 			// Идем между шайбой и точкой защиты
-			return myMoveTo(self, world, game, move, (world.getPuck().getX()+guardPointX)/2,(world.getPuck().getY()+guardPointY)/2, false,game.getStickLength());
+			//return myMoveTo(self, world, game, move, (world.getPuck().getX()+guardPointX)/2,(world.getPuck().getY()+guardPointY)/2, false,game.getStickLength());
 		} else if (puckOnMySide) {
 			return myMoveTo(self, world, game, move, world.getPuck(), false,game.getStickLength());
 		} else {
@@ -249,8 +251,9 @@ public final class MyStrategy implements Strategy {
 			move.setSpeedUp(1.0D);
 			move.setTurn(self.getAngleTo(moveToX, moveToY));
 		} else if (world.getPuck().getOwnerPlayerId() == self.getId()
-				&& (abs(self.getX() - opponentGateX) > DIST2STRIKE)) {
+				&& puckOnMySide){//(abs(self.getX() - opponentGateX) > world.getWidth()/2)) {
 			move.setTurn(self.getAngleTo(areaForStrikeToGateXP, areaForStrikeToGateYP));
+			move.setSpeedUp(1.0D);
 		} else {
 			double needTurn = self.getAngleTo(moveToX, moveToY);
 			if (PI / 2 > abs(needTurn)) {
@@ -438,8 +441,8 @@ public final class MyStrategy implements Strategy {
 				&& world.getPuck().getX() < world.getWidth() *0.4 : world
 				.getWidth() * 0.4 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.6);
-		areaForStrikeToGateXP = world.getWidth() / 2// opponentGateX
-		 - (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
+		areaForStrikeToGateXP = opponentGateX// opponentGateX
+		 + 3.0D*(opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
 		 : DIST2STRIKE);
 		areaForStrikeToGateXS=areaForStrikeToGateXP;
 		areaForStrikeToGateYP = opponentGateY
