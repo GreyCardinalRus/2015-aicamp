@@ -105,7 +105,7 @@ public final class MyStrategy implements Strategy {
 					continue;
 				}
 
-				if (sin(self.getAngleTo(hockeyist))
+				if (sin(self.getAngleTo(hockeyist)-angleToPass)
 						* self.getDistanceTo(hockeyist)< game.getStickLength()
 						&&self.getDistanceTo(hockeyist)> 2*self.getRadius())// game.getStickLength())
 					passTrue = false;
@@ -149,33 +149,15 @@ public final class MyStrategy implements Strategy {
 						- areaForStrikeToGateXP, self.getY() - areaForStrikeToGateYP))
 		// форвард ближе чем я! Отдам ему пас!
 		{
-//			boolean passTrue = true;
-			// for (Hockeyist hockeyist : world.getHockeyists()) {
-			// if (!hockeyist.isTeammate()) {
-			// if (self.getAngleTo(hockeyist)
-			// + sin(game.getStickLength()
-			// * self.getAngleTo(hockeyist)) < self
-			// .getAngleTo(isForward))
-			// passTrue = false;
-			// }
-			// }
 			if //(passTrue)
 				(doItPass(self, world, game, move, isForward, true)) return true;
-			//else
-			//	doItPass(self, world, game, move, isForward, false);
-			// System.out.println("pass");
-			//return true;
 			// Мы в своей половине
 		} //else 
 		if (hypot(self.getX() - areaForStrikeToGateXP, self.getY()
-				- areaForStrikeToGateYP) > self.getRadius()*2) {
+				- areaForStrikeToGateYP) > self.getRadius()*5) {
 
 			return myMoveTo(self, world, game, move, areaForStrikeToGateXP,
 					areaForStrikeToGateYP, false,self.getRadius());
-			// }
-//		} else if (self.getAngleTo(opponentGateX, opponentGateY) > STRIKE_ANGLE) {
-//			
-//			return myMoveTo(self, world, game, move, areaForStrikeToGateX, areaForStrikeToGateY, true, self.getRadius());
 		}
 
 		else {
@@ -268,7 +250,7 @@ public final class MyStrategy implements Strategy {
 			move.setTurn(self.getAngleTo(moveToX, moveToY));
 		} else if (world.getPuck().getOwnerPlayerId() == self.getId()
 				&& (abs(self.getX() - opponentGateX) > DIST2STRIKE)) {
-			move.setTurn(self.getAngleTo(opponentGateX, opponentGateY));
+			move.setTurn(self.getAngleTo(areaForStrikeToGateXP, areaForStrikeToGateYP));
 		} else {
 			double needTurn = self.getAngleTo(moveToX, moveToY);
 			if (PI / 2 > abs(needTurn)) {
