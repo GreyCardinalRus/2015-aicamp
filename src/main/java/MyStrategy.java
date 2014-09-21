@@ -187,8 +187,8 @@ public final class MyStrategy implements Strategy {
 				
 			}
 			else if (self.getState() != HockeyistState.SWINGING) {
-				System.out.println(hypot(self.getX() - areaForStrikeToGateXP, self.getY()
-						- areaForStrikeToGateYP)+"<"+ self.getRadius()*2);
+//				System.out.println(hypot(self.getX() - areaForStrikeToGateXP, self.getY()
+//						- areaForStrikeToGateYP)+"<"+ self.getRadius()*2);
 				move.setAction(ActionType.SWING); // return true;
 			} else 
 			{
@@ -215,6 +215,9 @@ public final class MyStrategy implements Strategy {
 			// return myMoveTo(self, world, game, move, guardPointX,
 			// guardPointY, false);
 
+		} else if (puckOnMySide&&world.getPuck().getOwnerPlayerId() != -1&&world.getPuck().getOwnerPlayerId() != self.getPlayerId()) {
+			// Идем между шайбой и точкой защиты
+			return myMoveTo(self, world, game, move, (world.getPuck().getX()+guardPointX)/2,(world.getPuck().getY()+guardPointY)/2, false,game.getStickLength());
 		} else if (puckOnMySide) {
 			return myMoveTo(self, world, game, move, world.getPuck(), false,game.getStickLength());
 		} else {
@@ -263,6 +266,9 @@ public final class MyStrategy implements Strategy {
 		if (isHard) {
 			move.setSpeedUp(1.0D);
 			move.setTurn(self.getAngleTo(moveToX, moveToY));
+		} else if (world.getPuck().getOwnerPlayerId() == self.getId()
+				&& (abs(self.getX() - opponentGateX) > DIST2STRIKE)) {
+			move.setTurn(self.getAngleTo(opponentGateX, opponentGateY));
 		} else {
 			double needTurn = self.getAngleTo(moveToX, moveToY);
 			if (PI / 2 > abs(needTurn)) {
@@ -447,9 +453,9 @@ public final class MyStrategy implements Strategy {
 				&& world.getPuck().getX() > world.getWidth() * 0.8);
 		puckOnMySide = (opponentPlayer.getNetBack() > world.getWidth() *0.5 ? world
 				.getWidth() *0.2 < world.getPuck().getX()
-				&& world.getPuck().getX() < world.getWidth() *0.6 : world
+				&& world.getPuck().getX() < world.getWidth() *0.4 : world
 				.getWidth() * 0.4 < world.getPuck().getX()
-				&& world.getPuck().getX() < world.getWidth() * 0.8);
+				&& world.getPuck().getX() < world.getWidth() * 0.6);
 		areaForStrikeToGateXP = world.getWidth() / 2// opponentGateX
 		 - (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
 		 : DIST2STRIKE);
