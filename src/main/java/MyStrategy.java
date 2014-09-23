@@ -465,8 +465,15 @@ public final class MyStrategy implements Strategy {
 				.getNetFront());
 		opponentGateY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
 				.getNetTop());
-		opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
-				* game.getGoalNetHeight() * (null == opponentGOALIE ? 0 : 1);
+		if (abs(self.getX() - opponentGateX) > 0.5D * world.getWidth()) {
+			opponentGateY += (OHY < 0.5D * world.getHeight() ? 0.2D : -0.2D)
+					* world.getHeight() * (null == opponentGOALIE ? 0 : 1);
+
+		} else {
+			opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
+					* game.getGoalNetHeight()
+					* (null == opponentGOALIE ? 0 : 1);
+		}
 
 		puckOnOpponentSide = (opponentPlayer.getNetBack() < world.getWidth() / 2 ? world
 				.getWidth() * 0.2 < world.getPuck().getX()
