@@ -216,7 +216,7 @@ public final class MyStrategy implements Strategy {
 		if (world.getPuck().getOwnerPlayerId() == self.getPlayerId()) {
 			// Шайба у наших, подходим ближе к центру своей половины
 			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
-					false, self.getRadius());
+					false, self.getRadius()*2);
 
 			// } else if (world.getPuck().getOwnerPlayerId() != -1) {
 			// // Шайба у противника прижимаемся
@@ -300,7 +300,7 @@ public final class MyStrategy implements Strategy {
 				move.setSpeedUp(-mySpeed);
 			}
 		}
-		if (abs(move.getTurn()) > PI / 80)
+		if (abs(move.getTurn()) > (PI / 80))
 			move.setSpeedUp(0.0D);
 		else
 			move.setSpeedUp(move.getSpeedUp());// * 5
@@ -317,7 +317,7 @@ public final class MyStrategy implements Strategy {
 			// Шайба у наших, подходим ближе к центру своей половины
 			return myMoveTo(self, world, game, move,
 					1.0D * (areaForStrikeToGateXP), areaForStrikeToGateYP,
-					false, self.getRadius());
+					false, 2.0D *self.getRadius());
 
 		} else {
 			// if (puckOnOpponentSide) {
@@ -486,19 +486,24 @@ public final class MyStrategy implements Strategy {
 				.getWidth() * 0.4 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.6);
 		areaForStrikeToGateXP = opponentGateX// opponentGateX
-				+ 3.0D
+				+ 4.0D
 				* (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
 						: DIST2STRIKE);
 		areaForStrikeToGateXS = areaForStrikeToGateXP;
-		areaForStrikeToGateYP = opponentGateY
-				+ 1.1D
-				* (self.getY() < (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-						.getNetTop())) ? -1.0D : 1.0D)
+		double myshiftY=0;
+		if(abs(self.getX() - opponentGateX) < 0.6D * world.getWidth()){
+			myshiftY=(self.getY() > (0.5D *  world.getHeight()) ? 1.0D : -1.0D);
+		}
+		else {
+			myshiftY=(OHY < (0.5D *  world.getHeight()) ? 1.0D : -1.0D);
+		}
+		areaForStrikeToGateYP = 0.5D * world.getHeight()
+				+ 1.0D
+				* myshiftY
 				* game.getGoalNetHeight();
-		areaForStrikeToGateYS = opponentGateY
-				- 0.1D
-				* (self.getY() < (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-						.getNetTop())) ? -1.0D : 1.0D)
+		areaForStrikeToGateYS = 0.5D * world.getHeight()
+				- 1.0D
+				* myshiftY
 				* game.getGoalNetHeight();
 
 		guardPointX = world.getWidth()
@@ -548,7 +553,7 @@ public final class MyStrategy implements Strategy {
 		if (self.getDistanceTo(world.getPuck()) <= game.getStickLength()
 				|| abs(self.getAngleTo(world.getPuck()) - self.getAngle()) <= 0.5 * game
 						.getStickSector()) {
-			move.setSpeedUp(1.0D);
+			//move.setSpeedUp(1.0D);
 			move.setTurn(self.getAngleTo(world.getPuck()));
 			move.setAction(ActionType.TAKE_PUCK);
 			return true;
