@@ -60,7 +60,7 @@ public final class MyStrategy implements Strategy {
 										// HockeyistState.SWINGING) {
 		{
 			move.setAction(ActionType.STRIKE);
-			// move.setAction(ActionType.SWING);
+			move.setAction(ActionType.SWING);
 			return;
 		}
 
@@ -98,13 +98,13 @@ public final class MyStrategy implements Strategy {
 	 */
 	private boolean doItPass(Hockeyist self, World world, Game game, Move move,
 			Hockeyist passTo, boolean passis) {
-		if (passis) {
+		if (passis && 0.5D * world.getWidth() > (opponentGateX - self.getX())) {
 			double angleToPass = self.getAngleTo(passTo);
 			boolean passTrue = true;
 
 			for (Hockeyist hockeyist : world.getHockeyists()) {
 				if (hockeyist.isTeammate()
-						|| hockeyist.getType() == HockeyistType.GOALIE
+                    || hockeyist.getType() == HockeyistType.GOALIE
 						|| hockeyist.getState() == HockeyistState.KNOCKED_DOWN
 						|| hockeyist.getState() == HockeyistState.RESTING) {
 					continue;
@@ -147,12 +147,8 @@ public final class MyStrategy implements Strategy {
 
 			return false;
 		}
-		if (world.getTick() < 100) {
-			move.setTurn(PI / 4);
-			return true;
-		}
 		if (null == opponentGOALIE) {
-
+        self.
 		}
 		if (0.5D * world.getWidth() > (opponentGateX - self.getX())
 				&& null != opponentGOALIE
