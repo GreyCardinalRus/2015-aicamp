@@ -148,7 +148,6 @@ public final class MyStrategy implements Strategy {
 			return false;
 		}
 		if (null == opponentGOALIE) {
-        self.
 		}
 		if (0.5D * world.getWidth() > (opponentGateX - self.getX())
 				&& null != opponentGOALIE
