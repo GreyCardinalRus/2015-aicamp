@@ -460,26 +460,26 @@ public final class MyStrategy implements Strategy {
 				.getNetFront());
 		opponentGateY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
 				.getNetTop());
-		if (abs(self.getX() - opponentGateX) > 0.5D * world.getWidth()) {
-			opponentGateY += (OHY < 0.5D * world.getHeight() ? 0.2D : -0.2D)
-					* world.getHeight() * (null == opponentGOALIE ? 0 : 1);
-
-		} else {
+//		if (abs(self.getX() - opponentGateX) > 0.5D * world.getWidth()) {
+//			opponentGateY += (OHY < opponentGateY ? 0.2D : -0.2D)
+//					* world.getHeight() * (null == opponentGOALIE ? 0 : 1);
+//
+//		} else {
 			opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
 					* game.getGoalNetHeight()
 					* (null == opponentGOALIE ? 0 : 1);
-		}
+//	}
 
 		puckOnOpponentSide = (opponentPlayer.getNetBack() < world.getWidth() / 2 ? world
-				.getWidth() * 0.2 < world.getPuck().getX()
+				.getWidth() * 0.1 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.6 : world
 				.getWidth() * 0.4 > world.getPuck().getX()
-				&& world.getPuck().getX() > world.getWidth() * 0.8);
+				&& world.getPuck().getX() > world.getWidth() * 0.9);
 		puckOnMySide = (opponentPlayer.getNetBack() > world.getWidth() * 0.5 ? world
-				.getWidth() * 0.2 < world.getPuck().getX()
+				.getWidth() * 0.1 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.4 : world
 				.getWidth() * 0.4 < world.getPuck().getX()
-				&& world.getPuck().getX() < world.getWidth() * 0.6);
+				&& world.getPuck().getX() < world.getWidth() * 0.9);
 		areaForStrikeToGateXP = opponentGateX// opponentGateX
 				+ 4.0D
 				* (opponentGateX > world.getWidth() / 2 ? -DIST2STRIKE
@@ -492,18 +492,21 @@ public final class MyStrategy implements Strategy {
 		else {
 			myshiftY=(OHY < (0.5D *  world.getHeight()) ? 1.0D : -1.0D);
 		}
-		areaForStrikeToGateYP = 0.5D * world.getHeight()
+		areaForStrikeToGateYP = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
+				.getNetTop())
 				+ 1.0D
 				* myshiftY
 				* game.getGoalNetHeight();
-		areaForStrikeToGateYS = 0.5D * world.getHeight()
+		areaForStrikeToGateYS = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
+				.getNetTop())
 				- 1.0D
 				* myshiftY
 				* game.getGoalNetHeight();
 
 		guardPointX = world.getWidth()
 				* (self.getX() < opponentGateX ? 0.15D : 0.85D);
-		guardPointY = world.getHeight() / 2 + 2 * self.getRadius();
+		guardPointY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
+				.getNetTop());//world.getHeight() / 2 + 2 * self.getRadius();
 
 		// if ((OHY < 0.5D * world.getHeight() && areaForStrikeToGateYP <
 		// areaForStrikeToGateYS)
