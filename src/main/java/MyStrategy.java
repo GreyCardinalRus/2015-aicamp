@@ -12,9 +12,9 @@ public final class MyStrategy implements Strategy {
 	private Hockeyist isGuard = null;
 	private Player opponentPlayer = null;
 
-	private static boolean debugInfo2File=true;
-	
-	private double mySpeed = 0.9D;
+	private static boolean debugInfo2File = true;
+
+	private double mySpeed = 1.0D;
 	private static double correctAngleK = 0;
 
 	final static int DIST2STRIKE = 100;
@@ -35,13 +35,90 @@ public final class MyStrategy implements Strategy {
 
 	@Override
 	public void move(Hockeyist self, World world, Game game, Move move) {
+		_move(self, world, game, move);
+		if (debugInfo2File) {
+
+			try {
+				File outfile = new File(world.getOpponentPlayer().getName()
+						+ "_debug.csv");
+				FileWriter wrt;
+				if (!outfile.exists()
+						|| (world.getTick() == 0 && self.getTeammateIndex() == 0)) {
+					// outfile.deleteOnExit();
+					outfile.createNewFile();
+					wrt = new FileWriter(outfile);
+					wrt.append("Tick\t");
+					wrt.append("TIndex\t");
+					wrt.append("role\t");
+					wrt.append("self_X\t");
+					wrt.append("self_Y\t");
+					wrt.append("speed_X\t");
+					wrt.append("speedY\t");
+					wrt.append("oGateX\t");
+					wrt.append("oGateY\t");
+					wrt.append("aFSTGXP\t");
+					wrt.append("aFSTGYP\t");
+					wrt.append("aFSTGXS\t");
+					wrt.append("aFSTGYS\t");
+					wrt.append("guardPX\t");
+					wrt.append("guardPY\t");
+					wrt.append("PuckX\t");
+					wrt.append("PuckY\t");
+					wrt.append("oppFSt\t");
+					wrt.append("dangerOpp\t");
+					wrt.append("getRadius\t");
+					wrt.append("getStickLength\t");
+					wrt.append("  \n");
+					wrt.flush();
+				} else {
+					wrt = new FileWriter(outfile, true);
+
+				}
+				wrt.append("" + world.getTick() + "\t");
+				wrt.append("" + (int) self.getTeammateIndex() + "\t");
+				wrt.append(""
+						+ (isGuard.getId() == self.getId() ? "G" : (isForward
+								.getId() == self.getId() ? "F" : (isMiddle
+								.getId() == self.getId() ? "M" : "?"))) + "\t");
+				wrt.append("" + (int) self.getX() + "\t");
+				wrt.append("" + (int) self.getY() + "\t");
+				wrt.append("" + (int) (1000 * self.getSpeedX()) + "\t");
+				wrt.append("" + (int) (1000 * self.getSpeedY()) + "\t");
+				wrt.append("" + (int) opponentGateX + "\t");
+				wrt.append("" + (int) opponentGateY + "\t");
+				wrt.append("" + (int) areaForStrikeToGateXP + "\t");
+				wrt.append("" + (int) areaForStrikeToGateYP + "\t");
+				wrt.append("" + (int) areaForStrikeToGateXS + "\t");
+				wrt.append("" + (int) areaForStrikeToGateYS + "\t");
+				wrt.append("" + (int) guardPointX + "\t");
+				wrt.append("" + (int) guardPointY + "\t");
+				wrt.append("" + (int) world.getPuck().getX() + "\t");
+				wrt.append("" + (int) world.getPuck().getY() + "\t");
+				wrt.append("" + opponentForStrike + "\t");
+				wrt.append("" + dangerOponent + "\t");
+				wrt.append("" + (int) move.getSpeedUp() + "\t");
+				wrt.append("" +  move.getAction() + "\t");
+				wrt.append("" + "\n");
+				wrt.flush();
+				wrt.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+		}
+
+
+	}
+
+	public void _move(Hockeyist self, World world, Game game, Move move) {
 		// if (!(self.getRemainingCooldownTicks() == 0)
 		// || !(self.getRemainingKnockdownTicks() == 0))
 		// return;
 
 		calculateCommonVars(self, world, game, move);
 
-		defineRoles(self, world);
+		defineRoles(self, world,game);
 
 		if (self.getState() == HockeyistState.SWINGING) {
 			// System.out.println(world.getTick()+" SWINGING"+" SX="+(int)self.getX()+" SY="+(int)self.getY()+" GGX="+(int)opponentGateX+" GGY="+(int)opponentGateY+" areaFSTGX="+(int)areaForStrikeToGateX+" areaFSTGY="+(int)areaForStrikeToGateY+" GPX="+(int)guardPointX+" GPY="+(int)guardPointY);
@@ -110,7 +187,7 @@ public final class MyStrategy implements Strategy {
 
 			for (Hockeyist hockeyist : world.getHockeyists()) {
 				if (hockeyist.isTeammate()
-                    || hockeyist.getType() == HockeyistType.GOALIE
+						|| hockeyist.getType() == HockeyistType.GOALIE
 						|| hockeyist.getState() == HockeyistState.KNOCKED_DOWN
 						|| hockeyist.getState() == HockeyistState.RESTING) {
 					continue;
@@ -131,8 +208,9 @@ public final class MyStrategy implements Strategy {
 				// move.setSpeedUp(mySpeed);
 				// move.setTurn(self.getAngleTo(passTo.getX(), world.getHeight()
 				// - passTo.getY()));
-				return false;//return myMoveTo(self, world, game, move, opponentGateX,
-						//opponentGateY, true, self.getRadius());
+				return false;// return myMoveTo(self, world, game, move,
+								// opponentGateX,
+				// opponentGateY, true, self.getRadius());
 				// move.setAction(ActionType.NONE);
 			}
 		} else {
@@ -155,7 +233,7 @@ public final class MyStrategy implements Strategy {
 		}
 		if (null == opponentGOALIE) {
 		}
-		if (0.5D * world.getWidth() > (opponentGateX - self.getX())
+		if (0.5D * world.getWidth() > abs(opponentGateX - self.getX())
 				&& null != opponentGOALIE
 				&& ((hypot(isForward.getX() - areaForStrikeToGateXP,
 						(isForward.getY() - areaForStrikeToGateYP) / 3) < hypot(
@@ -171,17 +249,7 @@ public final class MyStrategy implements Strategy {
 			(doItPass(self, world, game, move, isForward, true))
 				return true;
 			// Мы в своей половине
-		} // else
-		// double
-		// newX=0.5D*world.getWidth()+0.2D*world.getWidth()*(opponentGateX>0.5D*world.getWidth()?1:-1),newY=0.5D*world.getHeight()+0.3D*world.getHeight()*(self.getY()>0.5D*world.getHeight()?-1:1);
-		// System.out.println(""+world.getTick()+" "+(int)self.getX()+" "+(int)self.getY()+" afsx="+(int)areaForStrikeToGateXP+" afxy="+(int)areaForStrikeToGateYP+" newX="+(int)newX+" newY="+(int)newY);
-		// if (abs(self.getX() - opponentGateX)>0.4D*world.getWidth()) {
-		// System.out.println("nw");
-		// return myMoveTo(self, world, game, move, newX,
-		// newY, true,self.getRadius());
-		// }
-		//
-		// else
+		} 
 		if (null != opponentGOALIE
 				&& (abs(self.getX() - areaForStrikeToGateXP) > self.getRadius() * 4 || abs(self
 						.getY() - areaForStrikeToGateYP) > self.getRadius() * 2)) {
@@ -196,13 +264,9 @@ public final class MyStrategy implements Strategy {
 				move.setSpeedUp(0.0D);
 				move.setTurn(angleToNet);
 			} else if (self.getState() != HockeyistState.SWINGING) {
-				// System.out.println(hypot(self.getX() - areaForStrikeToGateXP,
-				// self.getY()
-				// - areaForStrikeToGateYP)+"<"+ self.getRadius()*2);
 				move.setAction(ActionType.SWING); // return true;
 			} else {
 				move.setAction(ActionType.STRIKE); // return true;
-				// System.out.println(angleToNet+" SX="+(int)self.getX()+" SY="+(int)self.getY()+" GGX="+(int)opponentGateX+" GGY="+(int)opponentGateY+" areaFSTGX="+(int)areaForStrikeToGateX+" areaFSTGY="+(int)areaForStrikeToGateY+" GPX="+(int)guardPointX+" GPY="+(int)guardPointY);
 
 			}
 			return true;
@@ -217,17 +281,19 @@ public final class MyStrategy implements Strategy {
 		if (world.getPuck().getOwnerPlayerId() == self.getPlayerId()) {
 			// Шайба у наших, подходим ближе к центру своей половины
 			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
-					false, self.getRadius()*2);
+					false, self.getRadius() * 2);
 
 			// } else if (world.getPuck().getOwnerPlayerId() != -1) {
 			// // Шайба у противника прижимаемся
 			// return myMoveTo(self, world, game, move, guardPointX,
 			// guardPointY, false);
 
-	//	} else if (puckOnMySide && world.getPuck().getOwnerPlayerId() != -1
-	//			&& world.getPuck().getOwnerPlayerId() != self.getPlayerId()) {
-	//		return myMoveTo(self, world, game, move, guardPointX, guardPointY,
-	//				false, self.getRadius());
+			// } else if (puckOnMySide && world.getPuck().getOwnerPlayerId() !=
+			// -1
+			// && world.getPuck().getOwnerPlayerId() != self.getPlayerId()) {
+			// return myMoveTo(self, world, game, move, guardPointX,
+			// guardPointY,
+			// false, self.getRadius());
 			// Идем между шайбой и точкой защиты
 			// return myMoveTo(self, world, game, move,
 			// (world.getPuck().getX()+guardPointX)/2,(world.getPuck().getY()+guardPointY)/2,
@@ -237,7 +303,7 @@ public final class MyStrategy implements Strategy {
 					game.getStickLength());
 		} else {
 			return myMoveTo(self, world, game, move, guardPointX, guardPointY,
-					false, self.getRadius());
+					false, self.getRadius() * 2.0D);
 		}
 	}
 
@@ -247,16 +313,16 @@ public final class MyStrategy implements Strategy {
 	private boolean myMoveTo(Hockeyist self, World world, Game game, Move move,
 			Unit unit, boolean isHard, double nearArea) {
 		double newX = unit.getX(), newY = unit.getY();
-		if (unit.getId() == world.getPuck().getId()
-				&& self.getId() == isForward.getId()) { // calc traectori!
-			newX += unit.getSpeedX() * correctAngleK;
-			newY += unit.getSpeedY() * correctAngleK;
-			move.setSpeedUp(1.0D);
-			move.setTurn(self.getAngleTo(newX, newY));
-			return true;
-		} else {
-
-		}
+		// if (unit.getId() == world.getPuck().getId()
+		// && self.getId() == isForward.getId()) { // calc traectori!
+		// newX += unit.getSpeedX() * correctAngleK;
+		// newY += unit.getSpeedY() * correctAngleK;
+		// move.setSpeedUp(1.0D);
+		// move.setTurn(self.getAngleTo(newX, newY));
+		// return true;
+		// } else {
+		//
+		// }
 		// else return myMoveTo(self, world, game,
 		// move,unit.getX(),unit.getY());
 		return myMoveTo(self, world, game, move, newX, newY, isHard, nearArea);
@@ -278,16 +344,16 @@ public final class MyStrategy implements Strategy {
 			return true;
 		}
 		// Мы на левой или правой половине поля?
-		// isHard=true;
+		//isHard = true;
 		if (isHard) {
 			move.setSpeedUp(1.0D);
 			move.setTurn(self.getAngleTo(moveToX, moveToY));
+			return true;
 		} else if (world.getPuck().getOwnerHockeyistId() == self.getId()
 				&& (abs(self.getX() - opponentGateX) > world.getWidth() / 3)) {
-			move.setTurn(self.getAngleTo(moveToX, moveToY));// move.setTurn(self.getAngleTo(areaForStrikeToGateXP,
-															// areaForStrikeToGateYP));
+			move.setTurn(self.getAngleTo(moveToX, moveToY));
 			move.setSpeedUp(1.0D);
-			// System.out.println("GoTo Gate! "+world.getTick());
+			
 		} else {
 			double needTurn = self.getAngleTo(moveToX, moveToY);
 			if (0.5D * PI > abs(needTurn)) {
@@ -303,8 +369,8 @@ public final class MyStrategy implements Strategy {
 		}
 		if (abs(move.getTurn()) > (PI / 20))
 			move.setSpeedUp(0.0D);
-		else
-			move.setSpeedUp(move.getSpeedUp());// * 5
+		//else
+		//	move.setSpeedUp(move.getSpeedUp());// * 5
 		// * self.getDistanceTo(moveToX, moveToY) / world.getHeight());
 		return true;
 	}
@@ -318,11 +384,11 @@ public final class MyStrategy implements Strategy {
 			// Шайба у наших, подходим ближе к центру своей половины
 			return myMoveTo(self, world, game, move,
 					1.0D * (areaForStrikeToGateXP), areaForStrikeToGateYP,
-					false, 2.0D *self.getRadius());
+					false, 2.0D * self.getRadius());
 
 		} else {
 			// if (puckOnOpponentSide) {
-			return myMoveTo(self, world, game, move, world.getPuck(), false,
+			return myMoveTo(self, world, game, move, world.getPuck(), true,
 					game.getStickLength());
 
 			// } else {
@@ -513,71 +579,6 @@ public final class MyStrategy implements Strategy {
 		guardPointY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
 				.getNetTop());// world.getHeight() / 2 + 2 * self.getRadius();
 
-		if (debugInfo2File) {
-
-			try {
-				File outfile = new File(world.getOpponentPlayer().getName()+"_debug.csv");
-				FileWriter wrt;
-				if (!outfile.exists()) {
-					outfile.createNewFile();
-					wrt = new FileWriter(outfile);
-					wrt.append("Tick\t");
-					wrt.append("TIndex\t");
-					wrt.append("self_X\t");
-					wrt.append("self_Y\t");
-					wrt.append("speed_X\t");
-					wrt.append("speedY\t");
-					wrt.append("oGateX\t");
-					wrt.append("oGateY\t");
-					wrt.append("aFSTGXP\t");
-					wrt.append("aFSTGYP\t");
-					wrt.append("aFSTGXS\t");
-					wrt.append("aFSTGYS\t");
-					wrt.append("guardPX\t");
-					wrt.append("guardPY\t");
-					wrt.append("PuckX\t");
-					wrt.append("PuckY\t");
-					wrt.append("opponentFSt\t");
-					wrt.append("dangerOponent\t");
-					wrt.append("getRadius\t");
-					wrt.append("getStickLength\t");
-					wrt.append("  \n");
-					wrt.flush();
-				}
-				else{ 
-					wrt = new FileWriter(outfile, true);
-						
-				}
-				wrt.append("" + world.getTick() + "\t");
-				wrt.append("" + (int)self.getTeammateIndex()+ "\t");
-				wrt.append("" + (int)self.getX()+ "\t");
-				wrt.append("" + (int)self.getY() + "\t");
-				wrt.append("" + (int)(1000*self.getSpeedX())+ "\t");
-				wrt.append("" + (int)(1000*self.getSpeedY()) + "\t");
-				wrt.append("" + (int)opponentGateX + "\t");
-				wrt.append("" + (int)opponentGateY + "\t");
-				wrt.append("" + (int)areaForStrikeToGateXP + "\t");
-				wrt.append("" + (int)areaForStrikeToGateYP + "\t");
-				wrt.append("" + (int)areaForStrikeToGateXS + "\t");
-				wrt.append("" + (int)areaForStrikeToGateYS + "\t");
-				wrt.append("" + (int)guardPointX + "\t");
-				wrt.append("" + (int)guardPointY + "\t");
-				wrt.append("" + (int)world.getPuck().getX() + "\t");
-				wrt.append("" + (int)world.getPuck().getY() + "\t");
-				wrt.append("" + opponentForStrike + "\t");
-				wrt.append("" + dangerOponent + "\t");
-				wrt.append("" + (int)self.getRadius() + "\t");
-				wrt.append("" + (int)game.getStickLength() + "\t");
-				wrt.append("" +  "\n");
-				wrt.flush();
-				wrt.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
-		}
-
 		// isDebugFull--;
 		// // System.out.println(""+game.getStickLength()+" "+self.getRadius());
 		// System.out.println("SX"+(int)self.getX()+" SY="+(int)self.getY()+" GGX="+(int)opponentGateX+" GGY="+(int)opponentGateY+" areaFSTGX="+(int)areaForStrikeToGateXP+" areaFSTGY="+(int)areaForStrikeToGateYP+" GPX="+(int)guardPointX+" GPY="+(int)guardPointY);
@@ -597,17 +598,19 @@ public final class MyStrategy implements Strategy {
 			return false;// Уже у наших!
 		}
 
-		if (self.getDistanceTo(world.getPuck()) <= game.getStickLength()
-				|| abs(self.getAngleTo(world.getPuck()) - self.getAngle()) <= 0.5 * game
+		if (self.getDistanceTo(world.getPuck()) < game.getStickLength()
+				&& abs(self.getAngleTo(world.getPuck()) - self.getAngle()) <= 0.5 * game
 						.getStickSector()) {
-			//move.setSpeedUp(1.0D);
+			// move.setSpeedUp(1.0D);
 			move.setTurn(self.getAngleTo(world.getPuck()));
-			if(self.getId()==isGuard.getId()&&
-					(10<hypot(world.getPuck().getSpeedX(),world.getPuck().getSpeedY())
-							||world.getPuck().getOwnerPlayerId() !=-1&&world.getPuck().getOwnerPlayerId() != self.getPlayerId())){
+			if (self.getId() == isGuard.getId()
+					&& (10 < hypot(world.getPuck().getSpeedX(), world.getPuck()
+							.getSpeedY()) || world.getPuck().getOwnerPlayerId() != -1
+							&& world.getPuck().getOwnerPlayerId() != self
+									.getPlayerId())) {
 				move.setAction(ActionType.STRIKE);
-			}else{
-			move.setAction(ActionType.TAKE_PUCK);
+			} else {
+				move.setAction(ActionType.TAKE_PUCK);
 			}
 			return true;
 		}
@@ -630,21 +633,21 @@ public final class MyStrategy implements Strategy {
 			return true;
 
 		}
-		if (self.getSwingTicks() >= game.getMaxEffectiveSwingTicks()) {
-			move.setAction(ActionType.STRIKE);
-			return true;
-		}
-		if (self.getState() == HockeyistState.SWINGING) {
-			move.setAction(ActionType.SWING);
-			return true;
-		}
+		// if (self.getSwingTicks() >= game.getMaxEffectiveSwingTicks()) {
+		// move.setAction(ActionType.STRIKE);
+		// return true;
+		// }
+		// if (self.getState() == HockeyistState.SWINGING) {
+		// move.setAction(ActionType.SWING);
+		// return true;
+		// }
 		return false;
 	}
 
 	/**
 	 * @return Определяет кто какую роль играет
 	 */
-	void defineRoles(Hockeyist self, World world) {
+	void defineRoles(Hockeyist self, World world, Game game) {
 		isForward = null;
 		isMiddle = null;
 		isGuard = null;
@@ -675,10 +678,12 @@ public final class MyStrategy implements Strategy {
 			if (!hockeyist.isTeammate()
 					|| hockeyist.getType() == HockeyistType.GOALIE)
 				continue;
-			if (isForward != hockeyist && isGuard != hockeyist)
+			if (isForward.getId() != hockeyist.getId()
+					&& isGuard.getId() != hockeyist.getId())
 				isMiddle = hockeyist;
 
 		}
+
 	}
 
 	/**
