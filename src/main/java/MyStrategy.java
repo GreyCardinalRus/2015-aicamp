@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import model.*;
 import static java.lang.StrictMath.*;
 
@@ -8,6 +12,8 @@ public final class MyStrategy implements Strategy {
 	private Hockeyist isGuard = null;
 	private Player opponentPlayer = null;
 
+	private static boolean debugInfo2File=true;
+	
 	private double mySpeed = 0.9D;
 	private static double correctAngleK = 0;
 
@@ -20,7 +26,7 @@ public final class MyStrategy implements Strategy {
 			areaForStrikeToGateXS = 0, areaForStrikeToGateYS = 0;
 	private Hockeyist opponentGOALIE = null;
 	private Hockeyist nearestOpponent = null;
-	private boolean opponentForStrike = false;
+	private Hockeyist opponentForStrike = null;
 	private Hockeyist dangerOponent = null;
 	private boolean puckOnOpponentSide = false;
 	private boolean puckOnMySide = false;
@@ -39,7 +45,7 @@ public final class MyStrategy implements Strategy {
 
 		if (self.getState() == HockeyistState.SWINGING) {
 			// System.out.println(world.getTick()+" SWINGING"+" SX="+(int)self.getX()+" SY="+(int)self.getY()+" GGX="+(int)opponentGateX+" GGY="+(int)opponentGateY+" areaFSTGX="+(int)areaForStrikeToGateX+" areaFSTGY="+(int)areaForStrikeToGateY+" GPX="+(int)guardPointX+" GPY="+(int)guardPointY);
-			if (opponentForStrike) {
+			if (opponentForStrike!=null) {
 				move.setAction(ActionType.STRIKE);
 			}
 			if (world.getPuck().getOwnerHockeyistId() == self.getId()) {
@@ -56,10 +62,10 @@ public final class MyStrategy implements Strategy {
 			return;
 
 		if (world.getPuck().getOwnerHockeyistId() != self.getId()
-				&& opponentForStrike)// &&self.getState() !=
+				&& opponentForStrike!=null)// &&self.getState() !=
 										// HockeyistState.SWINGING) {
 		{
-			move.setAction(ActionType.STRIKE);
+			//move.setAction(ActionType.STRIKE);
 			move.setAction(ActionType.SWING);
 			return;
 		}
@@ -426,7 +432,7 @@ public final class MyStrategy implements Strategy {
 		double OHX = 0, OHY = 0;
 		int OHQ = 0;
 
-		opponentForStrike = false;
+		opponentForStrike = null;
 		dangerOponent = null;
 		opponentGOALIE = null;
 		for (Hockeyist hockeyist : world.getHockeyists()) {
@@ -446,7 +452,7 @@ public final class MyStrategy implements Strategy {
 			if (self.getDistanceTo(hockeyist) <= 0.8D * game.getStickLength()
 					&& abs(self.getAngleTo(hockeyist)) < 0.5D * game
 							.getStickSector())
-				opponentForStrike = true;
+				opponentForStrike = hockeyist;
 			if (hockeyist.getDistanceTo(self) <= game.getStickLength()
 					&& abs(hockeyist.getAngleTo(self)) < 0.5D * game
 							.getStickSector())
@@ -461,15 +467,14 @@ public final class MyStrategy implements Strategy {
 				.getNetFront());
 		opponentGateY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
 				.getNetTop());
-//		if (abs(self.getX() - opponentGateX) > 0.5D * world.getWidth()) {
-//			opponentGateY += (OHY < opponentGateY ? 0.2D : -0.2D)
-//					* world.getHeight() * (null == opponentGOALIE ? 0 : 1);
-//
-//		} else {
-			opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
-					* game.getGoalNetHeight()
-					* (null == opponentGOALIE ? 0 : 1);
-//	}
+		// if (abs(self.getX() - opponentGateX) > 0.5D * world.getWidth()) {
+		// opponentGateY += (OHY < opponentGateY ? 0.2D : -0.2D)
+		// * world.getHeight() * (null == opponentGOALIE ? 0 : 1);
+		//
+		// } else {
+		opponentGateY += (self.getY() < opponentGateY ? 0.5D : -0.5D)
+				* game.getGoalNetHeight() * (null == opponentGOALIE ? 0 : 1);
+		// }
 
 		puckOnOpponentSide = (opponentPlayer.getNetBack() < world.getWidth() / 2 ? world
 				.getWidth() * 0.1 < world.getPuck().getX()
@@ -483,53 +488,84 @@ public final class MyStrategy implements Strategy {
 				&& world.getPuck().getX() < world.getWidth() * 0.9);
 		areaForStrikeToGateXP = opponentGateX// opponentGateX
 				+ 4.0D
-				* (opponentGateX > 0.5D*world.getWidth() ? -DIST2STRIKE
+				* (opponentGateX > 0.5D * world.getWidth() ? -DIST2STRIKE
 						: DIST2STRIKE);
 		areaForStrikeToGateXS = areaForStrikeToGateXP;
-		double myshiftY=0;
-		if(abs(self.getX() - opponentGateX) < 0.6D * world.getWidth()){
-			myshiftY=(self.getY() > (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
+		double myshiftY = 0;
+		if (abs(self.getX() - opponentGateX) < 0.6D * world.getWidth()) {
+			myshiftY = (self.getY() > (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
+					.getNetTop())) ? 1.0D : -1.0D);
+		} else {
+			myshiftY = (OHY < (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
 					.getNetTop())) ? 1.0D : -1.0D);
 		}
-		else {
-			myshiftY=(OHY < (0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-					.getNetTop())) ? 1.0D : -1.0D);
-		}
-		areaForStrikeToGateYP = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-				.getNetTop())
-				+ 1.0D
-				* myshiftY
-				* game.getGoalNetHeight()* (null == opponentGOALIE ? 0 : 1);
-		areaForStrikeToGateYS = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-				.getNetTop())
-				- 1.0D
-				* myshiftY
-				* game.getGoalNetHeight()* (null == opponentGOALIE ? 0 : 1);
+		areaForStrikeToGateYP = 0.5D
+				* (opponentPlayer.getNetBottom() + opponentPlayer.getNetTop())
+				+ 1.0D * myshiftY * game.getGoalNetHeight()
+				* (null == opponentGOALIE ? 0 : 1);
+		areaForStrikeToGateYS = 0.5D
+				* (opponentPlayer.getNetBottom() + opponentPlayer.getNetTop())
+				- 1.0D * myshiftY * game.getGoalNetHeight()
+				* (null == opponentGOALIE ? 0 : 1);
 
 		guardPointX = world.getWidth()
 				* (self.getX() < opponentGateX ? 0.15D : 0.85D);
 		guardPointY = 0.5D * (opponentPlayer.getNetBottom() + opponentPlayer
-				.getNetTop());//world.getHeight() / 2 + 2 * self.getRadius();
+				.getNetTop());// world.getHeight() / 2 + 2 * self.getRadius();
 
-		// if ((OHY < 0.5D * world.getHeight() && areaForStrikeToGateYP <
-		// areaForStrikeToGateYS)
-		// || (OHY > 0.5D * world.getHeight() && areaForStrikeToGateYP >
-		// areaForStrikeToGateYS)) {
-		//
-		// double ts = 0, opponentGateYR = 0.5D
-		// * (opponentPlayer.getNetBottom() + opponentPlayer
-		// .getNetTop())
-		// - (self.getY() < opponentGateY ? 0.5D : -0.5D)
-		// * game.getGoalNetHeight()
-		// * (null == opponentGOALIE ? 0 : 1);
-		// ts = areaForStrikeToGateYP;
-		// areaForStrikeToGateYP = areaForStrikeToGateYS;
-		// areaForStrikeToGateYS = ts;
-		// ts = opponentGateYR;
-		// opponentGateYR = opponentGateY;
-		// opponentGateY = ts;
-		// }
-		// if (isDebugFull > 0) {
+		if (debugInfo2File) {
+
+			try {
+				File outfile = new File("debug.txt");
+				FileWriter wrt;
+				if (!outfile.exists()) {
+					outfile.createNewFile();
+					wrt = new FileWriter(outfile);
+					wrt.append(" world.getTick()  \t");
+					wrt.append(" getTeammateIndex()\t");
+					wrt.append(" (int)self.getX() \t");
+					wrt.append(" (int)self.getY() \t");
+					wrt.append(" (int)opponentGateX \t");
+					wrt.append(" (int)opponentGateY \t");
+					wrt.append(" (int)areaForStrikeToGateXP \t");
+					wrt.append(" (int)areaForStrikeToGateYP \t");
+					wrt.append(" (int)areaForStrikeToGateXS \t");
+					wrt.append(" (int)areaForStrikeToGateYS \t");
+					wrt.append(" (int)guardPointX \t");
+					wrt.append(" (int)guardPointY \t");
+					wrt.append(" opponentForStrike\t");
+					wrt.append(" dangerOponent \t");
+					wrt.append("  \n");
+					wrt.flush();
+				}
+				else{ 
+					wrt = new FileWriter(outfile, true);
+						
+				}
+				wrt.append("" + world.getTick() + "\t");
+				wrt.append("" + (int)self.getTeammateIndex()+ "\t");
+				wrt.append("" + (int)self.getX()+ "\t");
+				wrt.append("" + (int)self.getY() + "\t");
+				wrt.append("" + (int)opponentGateX + "\t");
+				wrt.append("" + (int)opponentGateY + "\t");
+				wrt.append("" + (int)areaForStrikeToGateXP + "\t");
+				wrt.append("" + (int)areaForStrikeToGateYP + "\t");
+				wrt.append("" + (int)areaForStrikeToGateXS + "\t");
+				wrt.append("" + (int)areaForStrikeToGateYS + "\t");
+				wrt.append("" + (int)guardPointX + "\t");
+				wrt.append("" + (int)guardPointY + "\t");
+				wrt.append("" + opponentForStrike + "\t");
+				wrt.append("" + dangerOponent + "\t");
+				wrt.append("" +  "\n");
+				wrt.flush();
+				wrt.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+		}
+
 		// isDebugFull--;
 		// // System.out.println(""+game.getStickLength()+" "+self.getRadius());
 		// System.out.println("SX"+(int)self.getX()+" SY="+(int)self.getY()+" GGX="+(int)opponentGateX+" GGY="+(int)opponentGateY+" areaFSTGX="+(int)areaForStrikeToGateXP+" areaFSTGY="+(int)areaForStrikeToGateYP+" GPX="+(int)guardPointX+" GPY="+(int)guardPointY);
@@ -537,7 +573,6 @@ public final class MyStrategy implements Strategy {
 		// // (opponentPlayer.getNetBottom() +
 		// //
 		// opponentPlayer.getNetTop()))+" SY="+(int)self.getY()+" GGY="+(int)opponentGateY+" areaFSTGY="+(int)areaForStrikeToGateY+" GPY="+(int)guardPointY);
-		// }
 
 	}
 
