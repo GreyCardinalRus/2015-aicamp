@@ -516,25 +516,31 @@ public final class MyStrategy implements Strategy {
 		if (debugInfo2File) {
 
 			try {
-				File outfile = new File("debug.txt");
+				File outfile = new File(world.getOpponentPlayer().getName()+"_debug.csv");
 				FileWriter wrt;
 				if (!outfile.exists()) {
 					outfile.createNewFile();
 					wrt = new FileWriter(outfile);
-					wrt.append(" world.getTick()  \t");
-					wrt.append(" getTeammateIndex()\t");
-					wrt.append(" (int)self.getX() \t");
-					wrt.append(" (int)self.getY() \t");
-					wrt.append(" (int)opponentGateX \t");
-					wrt.append(" (int)opponentGateY \t");
-					wrt.append(" (int)areaForStrikeToGateXP \t");
-					wrt.append(" (int)areaForStrikeToGateYP \t");
-					wrt.append(" (int)areaForStrikeToGateXS \t");
-					wrt.append(" (int)areaForStrikeToGateYS \t");
-					wrt.append(" (int)guardPointX \t");
-					wrt.append(" (int)guardPointY \t");
-					wrt.append(" opponentForStrike\t");
-					wrt.append(" dangerOponent \t");
+					wrt.append("Tick\t");
+					wrt.append("TIndex\t");
+					wrt.append("self_X\t");
+					wrt.append("self_Y\t");
+					wrt.append("speed_X\t");
+					wrt.append("speedY\t");
+					wrt.append("oGateX\t");
+					wrt.append("oGateY\t");
+					wrt.append("aFSTGXP\t");
+					wrt.append("aFSTGYP\t");
+					wrt.append("aFSTGXS\t");
+					wrt.append("aFSTGYS\t");
+					wrt.append("guardPX\t");
+					wrt.append("guardPY\t");
+					wrt.append("PuckX\t");
+					wrt.append("PuckY\t");
+					wrt.append("opponentFSt\t");
+					wrt.append("dangerOponent\t");
+					wrt.append("getRadius\t");
+					wrt.append("getStickLength\t");
 					wrt.append("  \n");
 					wrt.flush();
 				}
@@ -546,6 +552,8 @@ public final class MyStrategy implements Strategy {
 				wrt.append("" + (int)self.getTeammateIndex()+ "\t");
 				wrt.append("" + (int)self.getX()+ "\t");
 				wrt.append("" + (int)self.getY() + "\t");
+				wrt.append("" + (int)(1000*self.getSpeedX())+ "\t");
+				wrt.append("" + (int)(1000*self.getSpeedY()) + "\t");
 				wrt.append("" + (int)opponentGateX + "\t");
 				wrt.append("" + (int)opponentGateY + "\t");
 				wrt.append("" + (int)areaForStrikeToGateXP + "\t");
@@ -554,8 +562,12 @@ public final class MyStrategy implements Strategy {
 				wrt.append("" + (int)areaForStrikeToGateYS + "\t");
 				wrt.append("" + (int)guardPointX + "\t");
 				wrt.append("" + (int)guardPointY + "\t");
+				wrt.append("" + (int)world.getPuck().getX() + "\t");
+				wrt.append("" + (int)world.getPuck().getY() + "\t");
 				wrt.append("" + opponentForStrike + "\t");
 				wrt.append("" + dangerOponent + "\t");
+				wrt.append("" + (int)self.getRadius() + "\t");
+				wrt.append("" + (int)game.getStickLength() + "\t");
 				wrt.append("" +  "\n");
 				wrt.flush();
 				wrt.close();
