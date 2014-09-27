@@ -479,7 +479,7 @@ public final class MyStrategy implements Strategy {
 		puckOnMySide = (opponentPlayer.getNetBack() > world.getWidth() * 0.5 ? world
 				.getWidth() * 0.1 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.4 : world
-				.getWidth() * 0.4 < world.getPuck().getX()
+				.getWidth() * 0.6 < world.getPuck().getX()
 				&& world.getPuck().getX() < world.getWidth() * 0.9);
 		areaForStrikeToGateXP = opponentGateX// opponentGateX
 				+ 4.0D
