@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Arrays;
+
 /**
  * Предоставляет доступ к различным игровым константам.
  */
@@ -8,751 +10,576 @@ public class Game {
 
     private final int tickCount;
 
-    private final double worldWidth;
-    private final double worldHeight;
+    private final int worldWidth;
+    private final int worldHeight;
 
-    private final double goalNetTop;
-    private final double goalNetWidth;
-    private final double goalNetHeight;
+    private final double trackTileSize;
+    private final double trackTileMargin;
 
-    private final double rinkTop;
-    private final double rinkLeft;
-    private final double rinkBottom;
-    private final double rinkRight;
+    private final int lapCount;
+    private final int lapTickCount;
 
-    private final int afterGoalStateTickCount;
-    private final int overtimeTickCount;
+    private final int initialFreezeDurationTicks;
+    private final double burningTimeDurationFactor;
 
-    private final int defaultActionCooldownTicks;
-    private final int swingActionCooldownTicks;
-    private final int cancelStrikeActionCooldownTicks;
-    private final int actionCooldownTicksAfterLosingPuck;
+    private final int[] finishTrackScores;
+    private final int finishLapScore;
+    private final double lapWaypointsSummaryScoreFactor;
+    private final double carDamageScoreFactor;
+    private final int carEliminationScore;
 
-    private final double stickLength;
-    private final double stickSector;
-    private final double passSector;
+    private final double carWidth;
+    private final double carHeight;
 
-    private final int hockeyistAttributeBaseValue;
+    private final double carEnginePowerChangePerTick;
+    private final double carWheelTurnChangePerTick;
 
-    private final double minActionChance;
-    private final double maxActionChance;
+    private final double carAngularSpeedFactor;
 
-    private final double strikeAngleDeviation;
-    private final double passAngleDeviation;
+    private final double carMovementAirFrictionFactor;
+    private final double carRotationAirFrictionFactor;
 
-    private final double pickUpPuckBaseChance;
-    private final double takePuckAwayBaseChance;
+    private final double carLengthwiseMovementFrictionFactor;
+    private final double carCrosswiseMovementFrictionFactor;
+    private final double carRotationFrictionFactor;
 
-    private final int maxEffectiveSwingTicks;
-    private final double strikePowerBaseFactor;
-    private final double strikePowerGrowthFactor;
+    private final int throwProjectileCooldownTicks;
+    private final int useNitroCooldownTicks;
+    private final int spillOilCooldownTicks;
 
-    private final double strikePuckBaseChance;
+    private final double nitroEnginePowerFactor;
+    private final int nitroDurationTicks;
 
-    private final double knockdownChanceFactor;
-    private final double knockdownTicksFactor;
+    private final int carReactivationTimeTicks;
 
-    private final double maxSpeedToAllowSubstitute;
-    private final double substitutionAreaHeight;
+    private final double buggyMass;
+    private final double buggyEngineForwardPower;
+    private final double buggyEngineRearPower;
 
-    private final double passPowerFactor;
+    private final double jeepMass;
+    private final double jeepEngineForwardPower;
+    private final double jeepEngineRearPower;
 
-    private final double hockeyistMaxStamina;
-    private final double activeHockeyistStaminaGrowthPerTick;
-    private final double restingHockeyistStaminaGrowthPerTick;
-    private final double zeroStaminaHockeyistEffectivenessFactor;
-    private final double speedUpStaminaCostFactor;
-    private final double turnStaminaCostFactor;
-    private final double takePuckStaminaCost;
-    private final double swingStaminaCost;
-    private final double strikeStaminaBaseCost;
-    private final double strikeStaminaCostGrowthFactor;
-    private final double cancelStrikeStaminaCost;
-    private final double passStaminaCost;
+    private final double bonusSize;
+    private final double bonusMass;
 
-    private final double goalieMaxSpeed;
-    private final double hockeyistMaxSpeed;
+    private final int pureScoreAmount;
 
-    private final double struckHockeyistInitialSpeedFactor;
+    private final double washerRadius;
+    private final double washerMass;
+    private final double washerInitialSpeed;
+    private final double washerDamage;
 
-    private final double hockeyistSpeedUpFactor;
-    private final double hockeyistSpeedDownFactor;
-    private final double hockeyistTurnAngleFactor;
+    private final double sideWasherAngle;
 
-    private final int versatileHockeyistStrength;
-    private final int versatileHockeyistEndurance;
-    private final int versatileHockeyistDexterity;
-    private final int versatileHockeyistAgility;
+    private final double tireRadius;
+    private final double tireMass;
+    private final double tireInitialSpeed;
+    private final double tireDamageFactor;
 
-    private final int forwardHockeyistStrength;
-    private final int forwardHockeyistEndurance;
-    private final int forwardHockeyistDexterity;
-    private final int forwardHockeyistAgility;
+    private final double tireDisappearSpeedFactor;
 
-    private final int defencemanHockeyistStrength;
-    private final int defencemanHockeyistEndurance;
-    private final int defencemanHockeyistDexterity;
-    private final int defencemanHockeyistAgility;
-
-    private final int minRandomHockeyistParameter;
-    private final int maxRandomHockeyistParameter;
-
-    private final double struckPuckInitialSpeedFactor;
-
-    private final double puckBindingRange;
+    private final double oilSlickInitialRange;
+    private final double oilSlickRadius;
+    private final int oilSlickLifetime;
+    private final int maxOiledStateDurationTicks;
 
     public Game(
-            long randomSeed, int tickCount, double worldWidth, double worldHeight, double goalNetTop,
-            double goalNetWidth, double goalNetHeight, double rinkTop, double rinkLeft, double rinkBottom,
-            double rinkRight, int afterGoalStateTickCount, int overtimeTickCount, int defaultActionCooldownTicks,
-            int swingActionCooldownTicks, int cancelStrikeActionCooldownTicks, int actionCooldownTicksAfterLosingPuck,
-            double stickLength, double stickSector, double passSector, int hockeyistAttributeBaseValue,
-            double minActionChance, double maxActionChance, double strikeAngleDeviation, double passAngleDeviation,
-            double pickUpPuckBaseChance, double takePuckAwayBaseChance, int maxEffectiveSwingTicks,
-            double strikePowerBaseFactor, double strikePowerGrowthFactor, double strikePuckBaseChance,
-            double knockdownChanceFactor, double knockdownTicksFactor, double maxSpeedToAllowSubstitute,
-            double substitutionAreaHeight, double passPowerFactor, double hockeyistMaxStamina,
-            double activeHockeyistStaminaGrowthPerTick, double restingHockeyistStaminaGrowthPerTick,
-            double zeroStaminaHockeyistEffectivenessFactor, double speedUpStaminaCostFactor,
-            double turnStaminaCostFactor, double takePuckStaminaCost, double swingStaminaCost,
-            double strikeStaminaBaseCost, double strikeStaminaCostGrowthFactor, double cancelStrikeStaminaCost,
-            double passStaminaCost, double goalieMaxSpeed, double hockeyistMaxSpeed,
-            double struckHockeyistInitialSpeedFactor, double hockeyistSpeedUpFactor, double hockeyistSpeedDownFactor,
-            double hockeyistTurnAngleFactor, int versatileHockeyistStrength, int versatileHockeyistEndurance,
-            int versatileHockeyistDexterity, int versatileHockeyistAgility, int forwardHockeyistStrength,
-            int forwardHockeyistEndurance, int forwardHockeyistDexterity, int forwardHockeyistAgility,
-            int defencemanHockeyistStrength, int defencemanHockeyistEndurance, int defencemanHockeyistDexterity,
-            int defencemanHockeyistAgility, int minRandomHockeyistParameter, int maxRandomHockeyistParameter,
-            double struckPuckInitialSpeedFactor, double puckBindingRange) {
+            long randomSeed, int tickCount, int worldWidth, int worldHeight, double trackTileSize,
+            double trackTileMargin, int lapCount, int lapTickCount, int initialFreezeDurationTicks,
+            double burningTimeDurationFactor, int[] finishTrackScores, int finishLapScore,
+            double lapWaypointsSummaryScoreFactor, double carDamageScoreFactor, int carEliminationScore,
+            double carWidth, double carHeight, double carEnginePowerChangePerTick, double carWheelTurnChangePerTick,
+            double carAngularSpeedFactor, double carMovementAirFrictionFactor, double carRotationAirFrictionFactor,
+            double carLengthwiseMovementFrictionFactor, double carCrosswiseMovementFrictionFactor,
+            double carRotationFrictionFactor, int throwProjectileCooldownTicks, int useNitroCooldownTicks,
+            int spillOilCooldownTicks, double nitroEnginePowerFactor, int nitroDurationTicks,
+            int carReactivationTimeTicks, double buggyMass, double buggyEngineForwardPower, double buggyEngineRearPower,
+            double jeepMass, double jeepEngineForwardPower, double jeepEngineRearPower, double bonusSize,
+            double bonusMass, int pureScoreAmount, double washerRadius, double washerMass, double washerInitialSpeed,
+            double washerDamage, double sideWasherAngle, double tireRadius, double tireMass, double tireInitialSpeed,
+            double tireDamageFactor, double tireDisappearSpeedFactor, double oilSlickInitialRange,
+            double oilSlickRadius, int oilSlickLifetime, int maxOiledStateDurationTicks) {
         this.randomSeed = randomSeed;
         this.tickCount = tickCount;
         this.worldWidth = worldWidth;
         this.worldHeight = worldHeight;
-        this.goalNetTop = goalNetTop;
-        this.goalNetWidth = goalNetWidth;
-        this.goalNetHeight = goalNetHeight;
-        this.rinkTop = rinkTop;
-        this.rinkLeft = rinkLeft;
-        this.rinkBottom = rinkBottom;
-        this.rinkRight = rinkRight;
-        this.afterGoalStateTickCount = afterGoalStateTickCount;
-        this.overtimeTickCount = overtimeTickCount;
-        this.defaultActionCooldownTicks = defaultActionCooldownTicks;
-        this.swingActionCooldownTicks = swingActionCooldownTicks;
-        this.cancelStrikeActionCooldownTicks = cancelStrikeActionCooldownTicks;
-        this.actionCooldownTicksAfterLosingPuck = actionCooldownTicksAfterLosingPuck;
-        this.stickLength = stickLength;
-        this.stickSector = stickSector;
-        this.passSector = passSector;
-        this.hockeyistAttributeBaseValue = hockeyistAttributeBaseValue;
-        this.minActionChance = minActionChance;
-        this.maxActionChance = maxActionChance;
-        this.strikeAngleDeviation = strikeAngleDeviation;
-        this.passAngleDeviation = passAngleDeviation;
-        this.pickUpPuckBaseChance = pickUpPuckBaseChance;
-        this.takePuckAwayBaseChance = takePuckAwayBaseChance;
-        this.maxEffectiveSwingTicks = maxEffectiveSwingTicks;
-        this.strikePowerBaseFactor = strikePowerBaseFactor;
-        this.strikePowerGrowthFactor = strikePowerGrowthFactor;
-        this.strikePuckBaseChance = strikePuckBaseChance;
-        this.knockdownChanceFactor = knockdownChanceFactor;
-        this.knockdownTicksFactor = knockdownTicksFactor;
-        this.maxSpeedToAllowSubstitute = maxSpeedToAllowSubstitute;
-        this.substitutionAreaHeight = substitutionAreaHeight;
-        this.passPowerFactor = passPowerFactor;
-        this.hockeyistMaxStamina = hockeyistMaxStamina;
-        this.activeHockeyistStaminaGrowthPerTick = activeHockeyistStaminaGrowthPerTick;
-        this.restingHockeyistStaminaGrowthPerTick = restingHockeyistStaminaGrowthPerTick;
-        this.zeroStaminaHockeyistEffectivenessFactor = zeroStaminaHockeyistEffectivenessFactor;
-        this.speedUpStaminaCostFactor = speedUpStaminaCostFactor;
-        this.turnStaminaCostFactor = turnStaminaCostFactor;
-        this.takePuckStaminaCost = takePuckStaminaCost;
-        this.swingStaminaCost = swingStaminaCost;
-        this.strikeStaminaBaseCost = strikeStaminaBaseCost;
-        this.strikeStaminaCostGrowthFactor = strikeStaminaCostGrowthFactor;
-        this.cancelStrikeStaminaCost = cancelStrikeStaminaCost;
-        this.passStaminaCost = passStaminaCost;
-        this.goalieMaxSpeed = goalieMaxSpeed;
-        this.hockeyistMaxSpeed = hockeyistMaxSpeed;
-        this.struckHockeyistInitialSpeedFactor = struckHockeyistInitialSpeedFactor;
-        this.hockeyistSpeedUpFactor = hockeyistSpeedUpFactor;
-        this.hockeyistSpeedDownFactor = hockeyistSpeedDownFactor;
-        this.hockeyistTurnAngleFactor = hockeyistTurnAngleFactor;
-        this.versatileHockeyistStrength = versatileHockeyistStrength;
-        this.versatileHockeyistEndurance = versatileHockeyistEndurance;
-        this.versatileHockeyistDexterity = versatileHockeyistDexterity;
-        this.versatileHockeyistAgility = versatileHockeyistAgility;
-        this.forwardHockeyistStrength = forwardHockeyistStrength;
-        this.forwardHockeyistEndurance = forwardHockeyistEndurance;
-        this.forwardHockeyistDexterity = forwardHockeyistDexterity;
-        this.forwardHockeyistAgility = forwardHockeyistAgility;
-        this.defencemanHockeyistStrength = defencemanHockeyistStrength;
-        this.defencemanHockeyistEndurance = defencemanHockeyistEndurance;
-        this.defencemanHockeyistDexterity = defencemanHockeyistDexterity;
-        this.defencemanHockeyistAgility = defencemanHockeyistAgility;
-        this.minRandomHockeyistParameter = minRandomHockeyistParameter;
-        this.maxRandomHockeyistParameter = maxRandomHockeyistParameter;
-        this.struckPuckInitialSpeedFactor = struckPuckInitialSpeedFactor;
-        this.puckBindingRange = puckBindingRange;
+        this.trackTileSize = trackTileSize;
+        this.trackTileMargin = trackTileMargin;
+        this.lapCount = lapCount;
+        this.lapTickCount = lapTickCount;
+        this.initialFreezeDurationTicks = initialFreezeDurationTicks;
+        this.burningTimeDurationFactor = burningTimeDurationFactor;
+        this.carRotationFrictionFactor = carRotationFrictionFactor;
+        this.throwProjectileCooldownTicks = throwProjectileCooldownTicks;
+        this.useNitroCooldownTicks = useNitroCooldownTicks;
+        this.spillOilCooldownTicks = spillOilCooldownTicks;
+        this.nitroEnginePowerFactor = nitroEnginePowerFactor;
+        this.nitroDurationTicks = nitroDurationTicks;
+        this.carReactivationTimeTicks = carReactivationTimeTicks;
+        this.buggyMass = buggyMass;
+        this.buggyEngineForwardPower = buggyEngineForwardPower;
+        this.buggyEngineRearPower = buggyEngineRearPower;
+        this.jeepMass = jeepMass;
+        this.jeepEngineForwardPower = jeepEngineForwardPower;
+        this.jeepEngineRearPower = jeepEngineRearPower;
+        this.bonusSize = bonusSize;
+        this.bonusMass = bonusMass;
+        this.pureScoreAmount = pureScoreAmount;
+        this.washerRadius = washerRadius;
+        this.washerMass = washerMass;
+        this.washerInitialSpeed = washerInitialSpeed;
+        this.washerDamage = washerDamage;
+        this.sideWasherAngle = sideWasherAngle;
+        this.tireRadius = tireRadius;
+        this.tireMass = tireMass;
+        this.tireInitialSpeed = tireInitialSpeed;
+        this.tireDamageFactor = tireDamageFactor;
+        this.tireDisappearSpeedFactor = tireDisappearSpeedFactor;
+        this.oilSlickInitialRange = oilSlickInitialRange;
+        this.oilSlickRadius = oilSlickRadius;
+        this.oilSlickLifetime = oilSlickLifetime;
+        this.maxOiledStateDurationTicks = maxOiledStateDurationTicks;
+        this.finishTrackScores = Arrays.copyOf(finishTrackScores, finishTrackScores.length);
+        this.finishLapScore = finishLapScore;
+        this.lapWaypointsSummaryScoreFactor = lapWaypointsSummaryScoreFactor;
+        this.carDamageScoreFactor = carDamageScoreFactor;
+        this.carEliminationScore = carEliminationScore;
+        this.carWidth = carWidth;
+        this.carHeight = carHeight;
+        this.carEnginePowerChangePerTick = carEnginePowerChangePerTick;
+        this.carWheelTurnChangePerTick = carWheelTurnChangePerTick;
+        this.carAngularSpeedFactor = carAngularSpeedFactor;
+        this.carMovementAirFrictionFactor = carMovementAirFrictionFactor;
+        this.carRotationAirFrictionFactor = carRotationAirFrictionFactor;
+        this.carLengthwiseMovementFrictionFactor = carLengthwiseMovementFrictionFactor;
+        this.carCrosswiseMovementFrictionFactor = carCrosswiseMovementFrictionFactor;
     }
 
     /**
      * @return Возвращает некоторое число, которое ваша стратегия может использовать для инициализации генератора
-     *         случайных чисел. Данное значение имеет рекомендательный характер, однако позволит более точно
-     *         воспроизводить прошедшие игры.
+     * случайных чисел. Данное значение имеет рекомендательный характер, однако позволит более точно
+     * воспроизводить прошедшие игры.
      */
     public long getRandomSeed() {
         return randomSeed;
     }
 
     /**
-     * @return Возвращает длительность игры в тиках.
+     * @return Возвращает базовую длительность игры в тиках.
+     * Реальная длительность может отличаться от этого значения в меньшую сторону.
+     * Поле может быть определено как {@code game.initialFreezeDurationTicks + game.lapCount * game.lapTickCount}.
+     * Значение поля не меняется в процессе игры. Эквивалентно {@code world.tickCount}.
      */
     public int getTickCount() {
         return tickCount;
     }
 
     /**
-     * @return Возвращает ширину игрового мира.
+     * @return Возвращает ширину игрового мира в тайлах.
      */
-    public double getWorldWidth() {
+    public int getWorldWidth() {
         return worldWidth;
     }
 
     /**
-     * @return Возвращает высоту игрового мира.
+     * @return Возвращает высоту игрового мира в тайлах.
      */
-    public double getWorldHeight() {
+    public int getWorldHeight() {
         return worldHeight;
     }
 
     /**
-     * @return Возвращает ординату верхней штанги ворот.
+     * @return Возвращает размер (ширину и высоту) одного тайла.
      */
-    public double getGoalNetTop() {
-        return goalNetTop;
+    public double getTrackTileSize() {
+        return trackTileSize;
     }
 
     /**
-     * @return Возвращает ширину ворот.
+     * @return Возвращает отступ от границы тайла до границы прямого участка трассы, проходящего через этот тайл.
+     * Радиусы всех закруглённых сочленений участков трассы также равны этому значению.
      */
-    public double getGoalNetWidth() {
-        return goalNetWidth;
+    public double getTrackTileMargin() {
+        return trackTileMargin;
     }
 
     /**
-     * @return Возвращает высоту ворот.
+     * @return Возвращает количество кругов (циклов прохождения списка ключевых точек {@code world.waypoints}),
+     * которое необходимо пройти для завершения трассы.
      */
-    public double getGoalNetHeight() {
-        return goalNetHeight;
+    public int getLapCount() {
+        return lapCount;
     }
 
     /**
-     * @return Возвращает ординату верхней границы игрового поля.
+     * @return Возвращает количество тиков, которое выделяется кодемобилям на прохождение одного круга.
+     * Значение является составной частью выражения для нахождения базовой длительности игры ({@code game.tickCount}) и
+     * не используется в целях ограничения на прохождение одного отдельного круга.
      */
-    public double getRinkTop() {
-        return rinkTop;
+    public int getLapTickCount() {
+        return lapTickCount;
     }
 
     /**
-     * @return Возвращает абсциссу левой границы игрового поля.
+     * @return Возвращает количество тиков в начале игры, в течение которых кодемобиль не может изменять своё положение.
+     * Значение является составной частью выражения для нахождения базовой длительности игры ({@code game.tickCount}).
      */
-    public double getRinkLeft() {
-        return rinkLeft;
+    public int getInitialFreezeDurationTicks() {
+        return initialFreezeDurationTicks;
     }
 
     /**
-     * @return Возвращает ординату нижней границы игрового поля.
+     * @return Возвращает коэффициент, определяющий количество тиков до завершения игры после финиширования трассы
+     * очередным кодемобилем. Для получения более подробной информации смотрите документацию к
+     * {@code world.lastTickIndex}.
      */
-    public double getRinkBottom() {
-        return rinkBottom;
+    public double getBurningTimeDurationFactor() {
+        return burningTimeDurationFactor;
     }
 
     /**
-     * @return Возвращает абсциссу правой границы игрового поля.
+     * @return Возвращает 0-индексированный массив, содержащий количество баллов, зарабатываемых кодемобилями при
+     * завершении трассы. Кодемобиль, финишировавший первым, приносит владельцу {@code finishTrackScores[0]} баллов,
+     * вторым --- {@code finishTrackScores[1]} и так далее.
      */
-    public double getRinkRight() {
-        return rinkRight;
+    public int[] getFinishTrackScores() {
+        return Arrays.copyOf(finishTrackScores, finishTrackScores.length);
     }
 
     /**
-     * @return Возвращает длительность состояния вне игры после гола.
-     *         В течение этого времени новые забитые голы игнорируются,
-     *         а действия не требуют затрат выносливости.
+     * @return Возвращает количество баллов, зарабатываемых кодемобилем при прохождении одного круга.
+     * Баллы начисляются не единовременно, а постепенно, по мере прохождения ключевых точек.
      */
-    public int getAfterGoalStateTickCount() {
-        return afterGoalStateTickCount;
+    public int getFinishLapScore() {
+        return finishLapScore;
     }
 
     /**
-     * @return Возвращает длительность дополнительного времени.
-     *         Дополнительное время наступает в случае ничейного счёта на момент окончания основного времени.
-     *         Если за основное время не было забито ни одного гола, вратари обоих игроков убираются с поля.
+     * @return Возвращает долю от баллов за круг ({@code game.finishLapScore}), которую кодемобиль заработает при
+     * прохождении всех ключевых точек круга, кроме последней. Баллы равномерно распределены по ключевым точкам.
      */
-    public int getOvertimeTickCount() {
-        return overtimeTickCount;
+    public double getLapWaypointsSummaryScoreFactor() {
+        return lapWaypointsSummaryScoreFactor;
     }
 
     /**
-     * @return Возвращает длительность задержки, применяемой к хоккеисту
-     *         после совершения им большинства действий ({@code move.action}).
-     *         В течение этого времени хоккеист не может совершать новые действия.
+     * @return Возвращает количество баллов, зарабатываемых кодемобилем при нанесении {@code 1.0} урона кодемобилю
+     * другого игрока. При нанесении меньшего урона количество баллов пропорционально падает. Результат всегда
+     * округляется в меньшую сторону.
      */
-    public int getDefaultActionCooldownTicks() {
-        return defaultActionCooldownTicks;
+    public double getCarDamageScoreFactor() {
+        return carDamageScoreFactor;
     }
 
     /**
-     * @return Возвращает длительность задержки, применяемой к хоккеисту
-     *         после совершения им действия замах ({@code ActionType.SWING}).
-     *         В течение этого времени хоккеист не может совершать новые действия.
+     * @return Возвращает количество баллов, зарабатываемых кодемобилем при уничтожении кодемобиля другого игрока.
      */
-    public int getSwingActionCooldownTicks() {
-        return swingActionCooldownTicks;
+    public int getCarEliminationScore() {
+        return carEliminationScore;
     }
 
     /**
-     * @return Возвращает длительность задержки, применяемой к хоккеисту
-     *         после отмены им удара ({@code ActionType.CANCEL_STRIKE}).
-     *         В течение этого времени хоккеист не может совершать новые действия.
+     * @return Возвращает ширину кодемобиля.
      */
-    public int getCancelStrikeActionCooldownTicks() {
-        return cancelStrikeActionCooldownTicks;
+    public double getCarWidth() {
+        return carWidth;
     }
 
     /**
-     * @return Возвращает длительность задержки, применяемой к хоккеисту
-     *         в случае потери шайбы вследствие воздействия других хоккеистов.
-     *         В течение этого времени хоккеист не может совершать действия.
+     * @return Возвращает высоту кодемобиля.
      */
-    public int getActionCooldownTicksAfterLosingPuck() {
-        return actionCooldownTicksAfterLosingPuck;
+    public double getCarHeight() {
+        return carHeight;
     }
 
     /**
-     * @return Возвращает длину клюшки хоккеиста. Хоккеист может воздействовать на игровой объект,
-     *         если и только если расстояние от центра хоккеиста до центра объекта не превышает эту величину.
+     * @return Возвращает максимальное значение, на которое может измениться относительная мощность двигателя кодемобиля
+     * ({@code car.enginePower}) за один тик.
      */
-    public double getStickLength() {
-        return stickLength;
+    public double getCarEnginePowerChangePerTick() {
+        return carEnginePowerChangePerTick;
     }
 
     /**
-     * @return Возвращает сектор клюшки хоккеиста. Хоккеист может воздействовать на игровой объект,
-     *         если и только если угол между направлением хоккеиста и вектором из центра хоккеиста в центр объекта
-     *         не превышает половину этой величины.
+     * @return Возвращает максимальное значение, на которое может измениться относительный угол поворота колёс
+     * кодемобиля ({@code car.wheelTurn}) за один тик.
      */
-    public double getStickSector() {
-        return stickSector;
+    public double getCarWheelTurnChangePerTick() {
+        return carWheelTurnChangePerTick;
     }
 
     /**
-     * @return Возвращает сектор, ограничивающий направление паса.
+     * @return Возвращает коэффициент, используемый для вычисления составляющей угловой скорости кодемобиля, порождаемой
+     * движением кодемобиля при ненулевом относительном угле поворота колёс. Для получения более подробной информации
+     * смотрите документацию к {@code move.wheelTurn}.
      */
-    public double getPassSector() {
-        return passSector;
+    public double getCarAngularSpeedFactor() {
+        return carAngularSpeedFactor;
     }
 
     /**
-     * @return Возвращает базовое значение атрибута хоккеиста.
-     *         Данная величина используется как коэффициент в различных игровых формулах.
+     * @return Возвращает относительную потерю модуля скорости кодемобиля за один тик.
      */
-    public int getHockeyistAttributeBaseValue() {
-        return hockeyistAttributeBaseValue;
+    public double getCarMovementAirFrictionFactor() {
+        return carMovementAirFrictionFactor;
     }
 
     /**
-     * @return Возвращает минимальный шанс на совершение любого вероятностного действия.
+     * @return Возвращает относительную потерю модуля угловой скорости кодемобиля за один тик. Относительная потеря
+     * применяется только к составляющей угловой скорости кодемобиля, не порождаемой движением кодемобиля при ненулевом
+     * относительном угле поворота колёс. Для получения более подробной информации смотрите документацию к
+     * {@code move.wheelTurn}.
      */
-    public double getMinActionChance() {
-        return minActionChance;
+    public double getCarRotationAirFrictionFactor() {
+        return carRotationAirFrictionFactor;
     }
 
     /**
-     * @return Возвращает максимальный шанс на совершение любого вероятностного действия.
+     * @return Возвращает абсолютную потерю составляющей скорости кодемобиля, направленной вдоль продольной оси
+     * кодемобиля, за один тик.
      */
-    public double getMaxActionChance() {
-        return maxActionChance;
+    public double getCarLengthwiseMovementFrictionFactor() {
+        return carLengthwiseMovementFrictionFactor;
     }
 
     /**
-     * @return Возвращает стандартное отклонение распределения Гаусса для угла удара ({@code ActionType.STRIKE})
-     *         хоккеиста при базовом значении атрибута ловкость. Чем выше ловкость конкретного хоккеиста,
-     *         тем точнее его удар.
+     * @return Возвращает абсолютную потерю составляющей скорости кодемобиля, направленной вдоль поперечной оси
+     * кодемобиля, за один тик.
      */
-    public double getStrikeAngleDeviation() {
-        return strikeAngleDeviation;
+    public double getCarCrosswiseMovementFrictionFactor() {
+        return carCrosswiseMovementFrictionFactor;
     }
 
     /**
-     * @return Возвращает стандартное отклонение распределения Гаусса для угла паса ({@code ActionType.PASS})
-     *         хоккеиста при базовом значении атрибута ловкость. Чем выше ловкость конкретного хоккеиста,
-     *         тем точнее его пас.
+     * @return Возвращает абсолютную потерю модуля угловой скорости кодемобиля за один тик. Абсолютная потеря
+     * применяется только к составляющей угловой скорости кодемобиля, не порождаемой движением кодемобиля при ненулевом
+     * относительном угле поворота колёс. Для получения более подробной информации смотрите документацию к
+     * {@code move.wheelTurn}.
      */
-    public double getPassAngleDeviation() {
-        return passAngleDeviation;
+    public double getCarRotationFrictionFactor() {
+        return carRotationFrictionFactor;
     }
 
     /**
-     * @return Возвращает шанс подобрать шайбу, не контролируемую другим хоккеистом, без учёта влияния атрибутов
-     *         хоккеиста и скорости шайбы. Равен шансу подобрать шайбу в случае, когда влияющие на действие атрибуты
-     *         хоккеиста равны {@code hockeyistAttributeBaseValue}, а шайба двигается со скоростью
-     *         {@code struckPuckInitialSpeedFactor}.
-     *         <p/>
-     *         Максимальный из атрибутов ловкость и подвижность хоккеиста увеличивает шанс на захват.
-     *         Скорость шайбы уменьшает шанс на захват.
+     * @return Возвращает длительность задержки в тиках, применяемой к кодемобилю после метания им снаряда.
+     * В течение этого времени кодемобиль не может метать новые снаряды.
      */
-    public double getPickUpPuckBaseChance() {
-        return pickUpPuckBaseChance;
+    public int getThrowProjectileCooldownTicks() {
+        return throwProjectileCooldownTicks;
     }
 
     /**
-     * @return Возвращает базовый шанс отнять шайбу у другого хоккеиста.
-     *         <p/>
-     *         Максимальный из атрибутов сила и ловкость хоккеиста, отнимающего шайбу, увеличивает шанс на захват.
-     *         Максимальный из атрибутов стойкость и подвижность текущего владельца шайбы уменьшает шанс на её потерю.
+     * @return Возвращает длительность задержки в тиках, применяемой к кодемобилю после использования им ускорения
+     * <<нитро>>. В течение этого времени кодемобиль не может повторно использовать систему закиси азота.
      */
-    public double getTakePuckAwayBaseChance() {
-        return takePuckAwayBaseChance;
+    public int getUseNitroCooldownTicks() {
+        return useNitroCooldownTicks;
     }
 
     /**
-     * @return Возвращает длительность замаха, после достижения которой сила удара не увеличивается.
+     * @return Возвращает длительность задержки в тиках, применяемой к кодемобилю после использования им канистры с
+     * мазутом. В течение этого времени кодемобиль не может разлить ещё одну канистру.
      */
-    public int getMaxEffectiveSwingTicks() {
-        return maxEffectiveSwingTicks;
+    public int getSpillOilCooldownTicks() {
+        return spillOilCooldownTicks;
     }
 
     /**
-     * @return Возвращает коэффициент силы удара без замаха.
+     * @return Возвращает относительную мощность двигателя кодемобиля, мгновенно устанавливаемую при использовании
+     * системы закиси азота для ускорения кодемобиля.
      */
-    public double getStrikePowerBaseFactor() {
-        return strikePowerBaseFactor;
+    public double getNitroEnginePowerFactor() {
+        return nitroEnginePowerFactor;
     }
 
     /**
-     * @return Возвращает увеличение коэффициента силы удара за каждый тик замаха.
-     *         Максимальное количество учитываемых тиков ограничено значением {@code maxEffectiveSwingTicks}.
+     * @return Возвращает длительность ускорения <<нитро>> в тиках.
      */
-    public double getStrikePowerGrowthFactor() {
-        return strikePowerGrowthFactor;
+    public int getNitroDurationTicks() {
+        return nitroDurationTicks;
     }
 
     /**
-     * @return Возвращает базовый шанс ударить шайбу. Базовый шанс не зависит от того,
-     *         контролирует шайбу другой хоккеист или нет, однако на результирующий шанс удара
-     *         по свободной и контролируемой шайбе влияют разные атрибуты хоккеиста
-     *         (смотрите документацию к {@code pickUpPuckBaseChance} и {@code takePuckAwayBaseChance}).
-     *         Если хоккеист, совершающий удар, контролирует шайбу, то вероятность удара всегда будет 100%.
+     * @return Возвращает длительность интервала в тиках, по прошествии которого сильно повреждённый кодемобиль
+     * (значение {@code car.durability} равно нулю) будет восстановлен.
      */
-    public double getStrikePuckBaseChance() {
-        return strikePuckBaseChance;
+    public int getCarReactivationTimeTicks() {
+        return carReactivationTimeTicks;
     }
 
     /**
-     * @return Возвращает шанс ударом ({@code ActionType.STRIKE}) сбить с ног другого хоккеиста при максимальной
-     *         длительности замаха. Среднее значение атрибутов сила и ловкость хоккеиста, совершающего удар,
-     *         увеличивает шанс сбить с ног. Значение атрибута стойкость атакуемого хоккеиста уменьшает шанс на падение.
+     * @return Возвращает массу кодемобиля типа багги ({@code CarType.BUGGY}).
      */
-    public double getKnockdownChanceFactor() {
-        return knockdownChanceFactor;
+    public double getBuggyMass() {
+        return buggyMass;
     }
 
     /**
-     * @return Возвращает количество тиков, по прошествии которого хоккеист восстановится после падения при базовом
-     *         значении атрибута подвижность. Чем выше подвижность, тем быстрее восстановление.
+     * @return Возвращает максимальную мощность двигателя кодемобиля типа багги ({@code CarType.BUGGY}) в направлении,
+     * совпадающем с направлением кодемобиля.
      */
-    public double getKnockdownTicksFactor() {
-        return knockdownTicksFactor;
+    public double getBuggyEngineForwardPower() {
+        return buggyEngineForwardPower;
     }
 
     /**
-     * @return Возвращает максимальную допустимую скорость для выполнения замены хоккеиста.
+     * @return Возвращает максимальную мощность двигателя кодемобиля типа багги ({@code CarType.BUGGY}) в направлении,
+     * противоположном направлению кодемобиля.
      */
-    public double getMaxSpeedToAllowSubstitute() {
-        return maxSpeedToAllowSubstitute;
+    public double getBuggyEngineRearPower() {
+        return buggyEngineRearPower;
     }
 
     /**
-     * @return Возвращает высоту зоны, в которой может быть выполнена замена хоккеиста. Зона расположена вдоль верхней
-     *         границы игровой площадки. Замена может быть выполнена только на своей половине поля.
+     * @return Возвращает массу кодемобиля типа джип ({@code CarType.JEEP}).
      */
-    public double getSubstitutionAreaHeight() {
-        return substitutionAreaHeight;
+    public double getJeepMass() {
+        return jeepMass;
     }
 
     /**
-     * @return Возвращает коэффициент силы паса. Умножается на устанавливаемое стратегией в интервале
-     *         [{@code 0.0}, {@code 1.0}] значение силы паса ({@code move.passPower}).
+     * @return Возвращает максимальную мощность двигателя кодемобиля типа джип ({@code CarType.JEEP}) в направлении,
+     * совпадающем с направлением кодемобиля.
      */
-    public double getPassPowerFactor() {
-        return passPowerFactor;
+    public double getJeepEngineForwardPower() {
+        return jeepEngineForwardPower;
     }
 
     /**
-     * @return Возвращает максимальное значение выносливости хоккеиста. Выносливость тратится на перемещение
-     *         и совершение хоккеистом различных действий. Каждый тик может восстановиться небольшое количество
-     *         выносливости в зависимости от состояния хоккеиста ({@code hockeyist.state}). По мере расходования
-     *         выносливости все атрибуты (соответственно, и эффективность всех действий) хоккеиста равномерно
-     *         уменьшаются и достигают значения {@code zeroStaminaHockeyistEffectivenessFactor} (от начальных
-     *         показателей) при падении выносливости до нуля. Хоккеист не восстанавливает выносливость в состояниях
-     *         {@code HockeyistState.SWINGING} и {@code HockeyistState.KNOCKED_DOWN}.
+     * @return Возвращает максимальную мощность двигателя кодемобиля типа джип ({@code CarType.JEEP}) в направлении,
+     * противоположном направлению кодемобиля.
      */
-    public double getHockeyistMaxStamina() {
-        return hockeyistMaxStamina;
+    public double getJeepEngineRearPower() {
+        return jeepEngineRearPower;
     }
 
     /**
-     * @return Возвращает значение, на которое увеличивается выносливость хоккеиста за каждый тик в состоянии
-     *         {@code HockeyistType.ACTIVE}.
+     * @return Возвращает размер (ширину и высоту) бонуса.
      */
-    public double getActiveHockeyistStaminaGrowthPerTick() {
-        return activeHockeyistStaminaGrowthPerTick;
+    public double getBonusSize() {
+        return bonusSize;
     }
 
     /**
-     * @return Возвращает значение, на которое увеличивается выносливость хоккеиста за каждый тик в состоянии
-     *         {@code HockeyistType.RESTING}.
+     * @return Возвращает массу бонуса.
      */
-    public double getRestingHockeyistStaminaGrowthPerTick() {
-        return restingHockeyistStaminaGrowthPerTick;
+    public double getBonusMass() {
+        return bonusMass;
     }
 
     /**
-     * @return Возвращает коэффициент эффективности действий хоккеиста при падении его выносливости до нуля.
+     * @return Возвращает количество баллов, мгновенно получаемых игроком, кодемобиль которого подобрал бонусные баллы
+     * ({@code BonusType.PURE_SCORE}).
      */
-    public double getZeroStaminaHockeyistEffectivenessFactor() {
-        return zeroStaminaHockeyistEffectivenessFactor;
+    public int getPureScoreAmount() {
+        return pureScoreAmount;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на максимальное по модулю
-     *         ускорение/замедление хоккеиста ({@code move.speedUp}) за 1 тик. Для меньших значений ускорения затраты
-     *         выносливости пропорционально падают.
+     * @return Возвращает радиус шайбы ({@code ProjectileType.WASHER}).
      */
-    public double getSpeedUpStaminaCostFactor() {
-        return speedUpStaminaCostFactor;
+    public double getWasherRadius() {
+        return washerRadius;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на максимальный по модулю
-     *         угол поворота хоккеиста ({@code move.turn}) за 1 тик. Для меньших значений угла поворота затраты
-     *         выносливости пропорционально падают.
+     * @return Возвращает массу шайбы ({@code ProjectileType.WASHER}).
      */
-    public double getTurnStaminaCostFactor() {
-        return turnStaminaCostFactor;
+    public double getWasherMass() {
+        return washerMass;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на совершение действия
-     *         {@code ActionType.TAKE_PUCK}.
+     * @return Возвращает начальную скорость шайбы ({@code ProjectileType.WASHER}).
      */
-    public double getTakePuckStaminaCost() {
-        return takePuckStaminaCost;
+    public double getWasherInitialSpeed() {
+        return washerInitialSpeed;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на совершение действия
-     *         {@code ActionType.SWING}.
+     * @return Возвращает урон шайбы ({@code ProjectileType.WASHER}).
      */
-    public double getSwingStaminaCost() {
-        return swingStaminaCost;
+    public double getWasherDamage() {
+        return washerDamage;
     }
 
     /**
-     * @return Возвращает базовое количество выносливости, которое необходимо затратить на совершение действия
-     *         {@code ActionType.STRIKE}.
+     * @return Возвращает модуль отклонения направления полёта двух шайб от направления кодемобиля.
+     * Направление третьей шайбы совпадает с направлением кодемобиля.
      */
-    public double getStrikeStaminaBaseCost() {
-        return strikeStaminaBaseCost;
+    public double getSideWasherAngle() {
+        return sideWasherAngle;
     }
 
     /**
-     * @return Возвращает увеличение затрат выносливости на удар ({@code ActionType.STRIKE}) за каждый тик замаха.
-     *         Максимальное количество учитываемых тиков ограничено значением {@code maxEffectiveSwingTicks}.
+     * @return Возвращает радиус шины ({@code ProjectileType.TIRE}).
      */
-    public double getStrikeStaminaCostGrowthFactor() {
-        return strikeStaminaCostGrowthFactor;
+    public double getTireRadius() {
+        return tireRadius;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на совершение действия
-     *         {@code ActionType.CANCEL_STRIKE}.
+     * @return Возвращает массу шины ({@code ProjectileType.TIRE}).
      */
-    public double getCancelStrikeStaminaCost() {
-        return cancelStrikeStaminaCost;
+    public double getTireMass() {
+        return tireMass;
     }
 
     /**
-     * @return Возвращает количество выносливости, которое необходимо затратить на совершение действия
-     *         {@code ActionType.PASS}.
+     * @return Возвращает начальную скорость шины ({@code ProjectileType.TIRE}).
      */
-    public double getPassStaminaCost() {
-        return passStaminaCost;
+    public double getTireInitialSpeed() {
+        return tireInitialSpeed;
     }
 
     /**
-     * @return Возвращает максимальную скорость перемещения вратаря.
+     * @return Возвращает количество урона, которое шина нанесёт неподвижно стоящему кодемобилю при попадании в него с
+     * начальной скоростью ({@code game.tireInitialSpeed}) и под прямым углом к поверхности кодемобиля. Движение
+     * кодемобиля в направлении, совпадающем с направлением движения шины, уменьшает урон, движение в противоположном
+     * направлении --- увеличивает.
      */
-    public double getGoalieMaxSpeed() {
-        return goalieMaxSpeed;
+    public double getTireDamageFactor() {
+        return tireDamageFactor;
     }
 
     /**
-     * @return Возвращает максимальную скорость перемещения полевого хоккеиста.
+     * @return Возвращает отношение текущей скорости шины к начальной ({@code game.tireInitialSpeed}), при превышении
+     * которого в момент столкновения с другим объектом шина отскакивает и продолжает свой полёт. В противном случае
+     * шина убирается из игрового мира.
      */
-    public double getHockeyistMaxSpeed() {
-        return hockeyistMaxSpeed;
+    public double getTireDisappearSpeedFactor() {
+        return tireDisappearSpeedFactor;
     }
 
     /**
-     * @return Возвращает модуль скорости, добавляемой хоккеисту, попавшему под удар силы 1.0.
+     * @return Возвращает расстояние между ближайшими точками лужи мазута и кодемобиля при использовании канистры с
+     * мазутом.
      */
-    public double getStruckHockeyistInitialSpeedFactor() {
-        return struckHockeyistInitialSpeedFactor;
+    public double getOilSlickInitialRange() {
+        return oilSlickInitialRange;
     }
 
     /**
-     * @return Возвращает модуль ускорения, приобретаемого хоккеистом, при {@code move.speedUp} равном 1.0,
-     *         базовом значении атрибута подвижность и максимальном запасе выносливости.
-     *         Направление ускорения совпадает с направлением хоккеиста.
-     *         В игре отсутствует специальное ограничение на максимальную скорость хоккеиста, однако все
-     *         игровые объекты подвержены воздействию силы трения, которая уменьшает модуль их скорости каждый тик.
-     *         Чем больше скорость, тем на большую величину она уменьшается.
+     * @return Возвращает радиус лужи мазута.
      */
-    public double getHockeyistSpeedUpFactor() {
-        return hockeyistSpeedUpFactor;
+    public double getOilSlickRadius() {
+        return oilSlickRadius;
     }
 
     /**
-     * @return Возвращает модуль ускорения, приобретаемого хоккеистом, при {@code move.speedUp} равном -1.0,
-     *         базовом значении атрибута подвижность и максимальном запасе выносливости.
-     *         Направление ускорения противоположно направлению хоккеиста.
-     *         В игре отсутствует специальное ограничение на максимальную скорость хоккеиста, однако все
-     *         игровые объекты подвержены воздействию силы трения, которая уменьшает модуль их скорости каждый тик.
-     *         Чем больше скорость, тем на большую величину она уменьшается.
+     * @return Возвращает длительность высыхания лужи мазута в тиках.
      */
-    public double getHockeyistSpeedDownFactor() {
-        return hockeyistSpeedDownFactor;
+    public int getOilSlickLifetime() {
+        return oilSlickLifetime;
     }
 
     /**
-     * @return Возвращает максимальный модуль угла поворота хоккеиста за тик при базовом значении атрибута подвижность
-     *         и максимальном запасе выносливости.
+     * @return Возвращает максимально возможную длительность высыхания кодемобиля, центр которого попал в лужу мазута.
+     * При этом, длительность высыхания лужа мазута сокращается на то же количество тиков. Таким образом, реальная
+     * длительность высыхания кодемобиля не может превышать оставшуюся длительность высыхания лужи.
      */
-    public double getHockeyistTurnAngleFactor() {
-        return hockeyistTurnAngleFactor;
-    }
-
-    /**
-     * @return Возвращает значение атрибута сила для хоккеиста-универсала.
-     */
-    public int getVersatileHockeyistStrength() {
-        return versatileHockeyistStrength;
-    }
-
-    /**
-     * @return Возвращает значение атрибута стойкость для хоккеиста-универсала.
-     */
-    public int getVersatileHockeyistEndurance() {
-        return versatileHockeyistEndurance;
-    }
-
-    /**
-     * @return Возвращает значение атрибута ловкость для хоккеиста-универсала.
-     */
-    public int getVersatileHockeyistDexterity() {
-        return versatileHockeyistDexterity;
-    }
-
-    /**
-     * @return Возвращает значение атрибута подвижность для хоккеиста-универсала.
-     */
-    public int getVersatileHockeyistAgility() {
-        return versatileHockeyistAgility;
-    }
-
-    /**
-     * @return Возвращает значение атрибута сила для нападающего.
-     */
-    public int getForwardHockeyistStrength() {
-        return forwardHockeyistStrength;
-    }
-
-    /**
-     * @return Возвращает значение атрибута стойкость для нападающего.
-     */
-    public int getForwardHockeyistEndurance() {
-        return forwardHockeyistEndurance;
-    }
-
-    /**
-     * @return Возвращает значение атрибута ловкость для нападающего.
-     */
-    public int getForwardHockeyistDexterity() {
-        return forwardHockeyistDexterity;
-    }
-
-    /**
-     * @return Возвращает значение атрибута подвижность для нападающего.
-     */
-    public int getForwardHockeyistAgility() {
-        return forwardHockeyistAgility;
-    }
-
-    /**
-     * @return Возвращает значение атрибута сила для защитника.
-     */
-    public int getDefencemanHockeyistStrength() {
-        return defencemanHockeyistStrength;
-    }
-
-    /**
-     * @return Возвращает значение атрибута стойкость для защитника.
-     */
-    public int getDefencemanHockeyistEndurance() {
-        return defencemanHockeyistEndurance;
-    }
-
-    /**
-     * @return Возвращает значение атрибута ловкость для защитника.
-     */
-    public int getDefencemanHockeyistDexterity() {
-        return defencemanHockeyistDexterity;
-    }
-
-    /**
-     * @return Возвращает значение атрибута подвижность для защитника.
-     */
-    public int getDefencemanHockeyistAgility() {
-        return defencemanHockeyistAgility;
-    }
-
-    /**
-     * @return Возвращает минимально возможное значение любого атрибута для хоккеиста со случайными параметрами.
-     */
-    public int getMinRandomHockeyistParameter() {
-        return minRandomHockeyistParameter;
-    }
-
-    /**
-     * @return Возвращает максимально возможное значение любого атрибута для хоккеиста со случайными параметрами.
-     */
-    public int getMaxRandomHockeyistParameter() {
-        return maxRandomHockeyistParameter;
-    }
-
-    /**
-     * @return Возвращает модуль скорости, устанавливаемой шайбе, попавшей под удар силы 1.0.
-     */
-    public double getStruckPuckInitialSpeedFactor() {
-        return struckPuckInitialSpeedFactor;
-    }
-
-    /**
-     * @return Возвращает расстояние от центра хоккеиста, контролирующего шайбу, до центра шайбы.
-     */
-    public double getPuckBindingRange() {
-        return puckBindingRange;
+    public int getMaxOiledStateDurationTicks() {
+        return maxOiledStateDurationTicks;
     }
 }

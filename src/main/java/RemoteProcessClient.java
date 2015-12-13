@@ -1,9 +1,13 @@
 import model.*;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public final class RemoteProcessClient implements Closeable {
     private static final int BUFFER_SIZE_BYTES = 1 << 20;
@@ -15,6 +19,11 @@ public final class RemoteProcessClient implements Closeable {
     private final InputStream inputStream;
     private final OutputStream outputStream;
     private final ByteArrayOutputStream outputStreamBuffer;
+
+    private String mapName;
+    private TileType[][] tilesXY;
+    private int[][] waypoints;
+    private Direction startingDirection;
 
     public RemoteProcessClient(String host, int port) throws IOException {
         socket = new Socket(host, port);
@@ -40,7 +49,7 @@ public final class RemoteProcessClient implements Closeable {
 
     public void writeProtocolVersion() throws IOException {
         writeEnum(MessageType.PROTOCOL_VERSION);
-        writeInt(1);
+        writeInt(2);
         flush();
     }
 
@@ -51,16 +60,14 @@ public final class RemoteProcessClient implements Closeable {
         }
 
         return new Game(
-                readLong(), readInt(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
-                readDouble(), readDouble(), readDouble(), readDouble(), readInt(), readInt(), readInt(), readInt(),
-                readInt(), readInt(), readDouble(), readDouble(), readDouble(), readInt(), readDouble(), readDouble(),
-                readDouble(), readDouble(), readDouble(), readDouble(), readInt(), readDouble(), readDouble(),
+                readLong(), readInt(), readInt(), readInt(), readDouble(), readDouble(), readInt(), readInt(),
+                readInt(), readDouble(), readIntArray(), readInt(), readDouble(), readDouble(), readInt(), readDouble(),
                 readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
+                readDouble(), readDouble(), readInt(), readInt(), readInt(), readDouble(), readInt(), readInt(),
                 readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
+                readDouble(), readInt(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
                 readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
-                readDouble(), readDouble(), readDouble(), readInt(), readInt(), readInt(), readInt(), readInt(),
-                readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readInt(),
-                readDouble(), readDouble()
+                readInt(), readInt()
         );
     }
 
@@ -71,7 +78,7 @@ public final class RemoteProcessClient implements Closeable {
         }
 
         ensureMessageType(messageType, MessageType.PLAYER_CONTEXT);
-        return readBoolean() ? new PlayerContext(readHockeyists(), readWorld()) : null;
+        return readBoolean() ? new PlayerContext(readCars(), readWorld()) : null;
     }
 
     public void writeMoves(Move[] moves) throws IOException {
@@ -91,15 +98,12 @@ public final class RemoteProcessClient implements Closeable {
                 } else {
                     writeBoolean(true);
 
-                    writeDouble(move.getSpeedUp());
-                    writeDouble(move.getTurn());
-                    writeEnum(move.getAction());
-                    if (move.getAction() == ActionType.PASS) {
-                        writeDouble(move.getPassPower());
-                        writeDouble(move.getPassAngle());
-                    } else if (move.getAction() == ActionType.SUBSTITUTE) {
-                        writeInt(move.getTeammateIndex());
-                    }
+                    writeDouble(move.getEnginePower());
+                    writeBoolean(move.isBrake());
+                    writeDouble(move.getWheelTurn());
+                    writeBoolean(move.isThrowProjectile());
+                    writeBoolean(move.isUseNitro());
+                    writeBoolean(move.isSpillOil());
                 }
             }
         }
@@ -118,7 +122,8 @@ public final class RemoteProcessClient implements Closeable {
         }
 
         return new World(
-                readInt(), readInt(), readDouble(), readDouble(), readPlayers(), readHockeyists(), readPuck()
+                readInt(), readInt(), readInt(), readInt(), readInt(), readPlayers(), readCars(), readProjectiles(),
+                readBonuses(), readOilSlicks(), readMapName(), readTilesXY(), readWaypoints(), readStartingDirection()
         );
     }
 
@@ -132,54 +137,151 @@ public final class RemoteProcessClient implements Closeable {
 
         for (int playerIndex = 0; playerIndex < playerCount; ++playerIndex) {
             if (readBoolean()) {
-                players[playerIndex] = new Player(
-                        readLong(), readBoolean(), readString(), readInt(), readBoolean(),
-                        readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
-                        readBoolean(), readBoolean()
-                );
+                players[playerIndex] = new Player(readLong(), readBoolean(), readString(), readBoolean(), readInt());
             }
         }
 
         return players;
     }
 
-    private Hockeyist[] readHockeyists() throws IOException {
-        int hockeyistCount = readInt();
-        if (hockeyistCount < 0) {
+    private Car[] readCars() throws IOException {
+        int carCount = readInt();
+        if (carCount < 0) {
             return null;
         }
 
-        Hockeyist[] hockeyists = new Hockeyist[hockeyistCount];
+        Car[] cars = new Car[carCount];
 
-        for (int hockeyistIndex = 0; hockeyistIndex < hockeyistCount; ++hockeyistIndex) {
-            hockeyists[hockeyistIndex] = readHockeyist();
+        for (int carIndex = 0; carIndex < carCount; ++carIndex) {
+            cars[carIndex] = readCar();
         }
 
-        return hockeyists;
+        return cars;
     }
 
-    private Hockeyist readHockeyist() throws IOException {
+    private Car readCar() throws IOException {
         if (!readBoolean()) {
             return null;
         }
 
-        return new Hockeyist(
-                readLong(), readLong(), readInt(), readDouble(), readDouble(), readDouble(), readDouble(),
-                readDouble(), readDouble(), readDouble(), readDouble(), readBoolean(), readEnum(HockeyistType.class),
-                readInt(), readInt(), readInt(), readInt(), readDouble(), readEnum(HockeyistState.class),
-                readInt(), readInt(), readInt(), readInt(), readEnum(ActionType.class), readBoolean() ? readInt() : null
-        );
-    }
-
-    private Puck readPuck() throws IOException {
-        if (!readBoolean()) {
-            return null;
-        }
-
-        return new Puck(
+        return new Car(
                 readLong(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
-                readLong(), readLong()
+                readDouble(), readDouble(), readDouble(), readLong(), readInt(), readBoolean(), readEnum(CarType.class),
+                readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readInt(), readDouble(),
+                readDouble(), readDouble(), readInt(), readInt(), readInt(), readBoolean()
         );
+    }
+
+    private Projectile[] readProjectiles() throws IOException {
+        int projectileCount = readInt();
+        if (projectileCount < 0) {
+            return null;
+        }
+
+        Projectile[] projectiles = new Projectile[projectileCount];
+
+        for (int projectileIndex = 0; projectileIndex < projectileCount; ++projectileIndex) {
+            projectiles[projectileIndex] = readProjectile();
+        }
+
+        return projectiles;
+    }
+
+    private Projectile readProjectile() throws IOException {
+        if (!readBoolean()) {
+            return null;
+        }
+
+        return new Projectile(
+                readLong(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
+                readDouble(), readDouble(), readLong(), readLong(), readEnum(ProjectileType.class)
+        );
+    }
+
+    private Bonus[] readBonuses() throws IOException {
+        int bonusCount = readInt();
+        if (bonusCount < 0) {
+            return null;
+        }
+
+        Bonus[] bonuses = new Bonus[bonusCount];
+
+        for (int bonusIndex = 0; bonusIndex < bonusCount; ++bonusIndex) {
+            bonuses[bonusIndex] = readBonus();
+        }
+
+        return bonuses;
+    }
+
+    private Bonus readBonus() throws IOException {
+        if (!readBoolean()) {
+            return null;
+        }
+
+        return new Bonus(
+                readLong(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
+                readDouble(), readDouble(), readDouble(), readEnum(BonusType.class)
+        );
+    }
+
+    private OilSlick[] readOilSlicks() throws IOException {
+        int oilSlickCount = readInt();
+        if (oilSlickCount < 0) {
+            return null;
+        }
+
+        OilSlick[] oilSlicks = new OilSlick[oilSlickCount];
+
+        for (int oilSlickIndex = 0; oilSlickIndex < oilSlickCount; ++oilSlickIndex) {
+            oilSlicks[oilSlickIndex] = readOilSlick();
+        }
+
+        return oilSlicks;
+    }
+
+    private OilSlick readOilSlick() throws IOException {
+        if (!readBoolean()) {
+            return null;
+        }
+
+        return new OilSlick(
+                readLong(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(), readDouble(),
+                readDouble(), readDouble(), readInt()
+        );
+    }
+
+    private String readMapName() throws IOException {
+        if (mapName != null) {
+            return mapName;
+        }
+
+        return mapName = readString();
+    }
+
+    private TileType[][] readTilesXY() throws IOException {
+        TileType[][] newTilesXY = readEnumArray2D(TileType.class);
+
+        if (newTilesXY != null && newTilesXY.length > 0) {
+            tilesXY = newTilesXY;
+        }
+
+        return tilesXY;
+    }
+
+    private int[][] readWaypoints() throws IOException {
+        if (waypoints != null) {
+            return waypoints;
+        }
+
+        return waypoints = readIntArray2D();
+    }
+
+    private Direction readStartingDirection() throws IOException {
+        if (startingDirection != null) {
+            return startingDirection;
+        }
+
+        return startingDirection = readEnum(Direction.class);
     }
 
     private static void ensureMessageType(MessageType actualType, MessageType expectedType) {
@@ -206,6 +308,62 @@ public final class RemoteProcessClient implements Closeable {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    private <E extends Enum> E[] readEnumArray(Class<E> enumClass, int count) throws IOException {
+        byte[] bytes = readBytes(count);
+        E[] array = (E[]) Array.newInstance(enumClass, count);
+
+        E[] values = enumClass.getEnumConstants();
+        int valueCount = values.length;
+
+        Arrays.sort(values, new Comparator<E>() {
+            @Override
+            public int compare(E valueA, E valueB) {
+                return valueA.ordinal() - valueB.ordinal();
+            }
+        });
+
+        for (int i = 0; i < count; ++i) {
+            byte ordinal = bytes[i];
+
+            if (ordinal >= 0 && ordinal < valueCount) {
+                array[i] = values[ordinal];
+            }
+        }
+
+        return array;
+    }
+
+    private <E extends Enum> E[] readEnumArray(Class<E> enumClass) throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        return readEnumArray(enumClass, count);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <E extends Enum> E[][] readEnumArray2D(Class<E> enumClass) throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        E[][] array;
+        try {
+            array = (E[][]) Array.newInstance(Class.forName("[L" + enumClass.getName() + ';'), count);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Can't load array class for " + enumClass + '.', e);
+        }
+
+        for (int i = 0; i < count; ++i) {
+            array[i] = readEnumArray(enumClass);
+        }
+
+        return array;
+    }
+
     private <E extends Enum> void writeEnum(E value) throws IOException {
         writeBytes(new byte[]{value == null ? (byte) -1 : (byte) value.ordinal()});
     }
@@ -216,11 +374,7 @@ public final class RemoteProcessClient implements Closeable {
             return null;
         }
 
-        try {
-            return new String(readBytes(length), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("UTF-8 is unsupported.", e);
-        }
+        return new String(readBytes(length), StandardCharsets.UTF_8);
     }
 
     private void writeString(String value) throws IOException {
@@ -229,12 +383,7 @@ public final class RemoteProcessClient implements Closeable {
             return;
         }
 
-        byte[] bytes;
-        try {
-            bytes = value.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException("UTF-8 is unsupported.", e);
-        }
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
 
         writeInt(bytes.length);
         writeBytes(bytes);
@@ -246,13 +395,37 @@ public final class RemoteProcessClient implements Closeable {
 
     private boolean[] readBooleanArray(int count) throws IOException {
         byte[] bytes = readBytes(count);
-        boolean[] booleans = new boolean[count];
+        boolean[] array = new boolean[count];
 
         for (int i = 0; i < count; ++i) {
-            booleans[i] = bytes[i] != 0;
+            array[i] = bytes[i] != 0;
         }
 
-        return booleans;
+        return array;
+    }
+
+    private boolean[] readBooleanArray() throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        return readBooleanArray(count);
+    }
+
+    private boolean[][] readBooleanArray2D() throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        boolean[][] array = new boolean[count][];
+
+        for (int i = 0; i < count; ++i) {
+            array[i] = readBooleanArray();
+        }
+
+        return array;
     }
 
     private void writeBoolean(boolean value) throws IOException {
@@ -261,6 +434,43 @@ public final class RemoteProcessClient implements Closeable {
 
     private int readInt() throws IOException {
         return ByteBuffer.wrap(readBytes(INTEGER_SIZE_BYTES)).order(PROTOCOL_BYTE_ORDER).getInt();
+    }
+
+    private int[] readIntArray(int count) throws IOException {
+        byte[] bytes = readBytes(count * INTEGER_SIZE_BYTES);
+        int[] array = new int[count];
+
+        for (int i = 0; i < count; ++i) {
+            array[i] = ByteBuffer.wrap(
+                    bytes, i * INTEGER_SIZE_BYTES, INTEGER_SIZE_BYTES
+            ).order(PROTOCOL_BYTE_ORDER).getInt();
+        }
+
+        return array;
+    }
+
+    private int[] readIntArray() throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        return readIntArray(count);
+    }
+
+    private int[][] readIntArray2D() throws IOException {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+
+        int[][] array = new int[count][];
+
+        for (int i = 0; i < count; ++i) {
+            array[i] = readIntArray();
+        }
+
+        return array;
     }
 
     private void writeInt(int value) throws IOException {

@@ -1,7 +1,4 @@
-import model.Game;
-import model.Hockeyist;
-import model.Move;
-import model.PlayerContext;
+import model.*;
 
 import java.io.IOException;
 
@@ -38,20 +35,20 @@ public final class Runner {
             PlayerContext playerContext;
 
             while ((playerContext = remoteProcessClient.readPlayerContext()) != null) {
-                Hockeyist[] playerHockeyists = playerContext.getHockeyists();
-                if (playerHockeyists == null || playerHockeyists.length != teamSize) {
+                Car[] playerCars = playerContext.getCars();
+                if (playerCars == null || playerCars.length != teamSize) {
                     break;
                 }
 
                 Move[] moves = new Move[teamSize];
 
-                for (int hockeyistIndex = 0; hockeyistIndex < teamSize; ++hockeyistIndex) {
-                    Hockeyist playerHockeyist = playerHockeyists[hockeyistIndex];
+                for (int carIndex = 0; carIndex < teamSize; ++carIndex) {
+                    Car playerCar = playerCars[carIndex];
 
                     Move move = new Move();
-                    moves[hockeyistIndex] = move;
-                    strategies[playerHockeyist.getTeammateIndex()].move(
-                            playerHockeyist, playerContext.getWorld(), game, move
+                    moves[carIndex] = move;
+                    strategies[playerCar.getTeammateIndex()].move(
+                            playerCar, playerContext.getWorld(), game, move
                     );
                 }
 

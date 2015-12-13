@@ -3,16 +3,16 @@ package model;
 import java.util.Arrays;
 
 public final class PlayerContext {
-    private final Hockeyist[] hockeyists;
+    private final Car[] cars;
     private final World world;
 
-    public PlayerContext(Hockeyist[] hockeyists, World world) {
-        this.hockeyists = Arrays.copyOf(hockeyists, hockeyists.length);
+    public PlayerContext(Car[] cars, World world) {
+        this.cars = Arrays.copyOf(cars, cars.length);
         this.world = world;
     }
 
-    public Hockeyist[] getHockeyists() {
-        return Arrays.copyOf(hockeyists, hockeyists.length);
+    public Car[] getCars() {
+        return Arrays.copyOf(cars, cars.length);
     }
 
     public World getWorld() {

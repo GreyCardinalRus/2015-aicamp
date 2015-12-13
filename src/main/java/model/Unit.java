@@ -8,7 +8,6 @@ import static java.lang.StrictMath.*;
 public abstract class Unit {
     private final long id;
     private final double mass;
-    private final double radius;
     private final double x;
     private final double y;
     private final double speedX;
@@ -17,11 +16,9 @@ public abstract class Unit {
     private final double angularSpeed;
 
     protected Unit(
-            long id, double mass, double radius, double x, double y,
-            double speedX, double speedY, double angle, double angularSpeed) {
+            long id, double mass, double x, double y, double speedX, double speedY, double angle, double angularSpeed) {
         this.id = id;
         this.mass = mass;
-        this.radius = radius;
         this.x = x;
         this.y = y;
         this.speedX = speedX;
@@ -45,13 +42,6 @@ public abstract class Unit {
     }
 
     /**
-     * @return Возвращает радиус объекта.
-     */
-    public double getRadius() {
-        return radius;
-    }
-
-    /**
      * @return Возвращает X-координату центра объекта. Ось абсцисс направлена слева направо.
      */
     public final double getX() {
@@ -59,7 +49,7 @@ public abstract class Unit {
     }
 
     /**
-     * @return Возвращает Y-координату центра объекта. Ось ординат направлена свеху вниз.
+     * @return Возвращает Y-координату центра объекта. Ось ординат направлена сверху вниз.
      */
     public final double getY() {
         return y;
@@ -73,7 +63,7 @@ public abstract class Unit {
     }
 
     /**
-     * @return Возвращает Y-составляющую скорости объекта. Ось ординат направлена свеху вниз.
+     * @return Возвращает Y-составляющую скорости объекта. Ось ординат направлена сверху вниз.
      */
     public final double getSpeedY() {
         return speedY;
@@ -81,7 +71,7 @@ public abstract class Unit {
 
     /**
      * @return Возвращает угол поворота объекта в радианах. Нулевой угол соответствует направлению оси абсцисс.
-     *         Положительные значения соответствуют повороту по часовой стрелке.
+     * Положительные значения соответствуют повороту по часовой стрелке.
      */
     public final double getAngle() {
         return angle;
@@ -89,7 +79,7 @@ public abstract class Unit {
 
     /**
      * @return Возвращает скорость вращения объекта.
-     *         Положительные значения соответствуют вращению по часовой стрелке.
+     * Положительные значения соответствуют вращению по часовой стрелке.
      */
     public double getAngularSpeed() {
         return angularSpeed;
@@ -99,7 +89,7 @@ public abstract class Unit {
      * @param x X-координата точки.
      * @param y Y-координата точки.
      * @return Возвращает ориентированный угол [{@code -PI}, {@code PI}] между направлением
-     *         данного объекта и вектором из центра данного объекта к указанной точке.
+     * данного объекта и вектором из центра данного объекта к указанной точке.
      */
     public double getAngleTo(double x, double y) {
         double absoluteAngleTo = atan2(y - this.y, x - this.x);
@@ -119,7 +109,7 @@ public abstract class Unit {
     /**
      * @param unit Объект, к центру которого необходимо определить угол.
      * @return Возвращает ориентированный угол [{@code -PI}, {@code PI}] между направлением
-     *         данного объекта и вектором из центра данного объекта к центру указанного объекта.
+     * данного объекта и вектором из центра данного объекта к центру указанного объекта.
      */
     public double getAngleTo(Unit unit) {
         return getAngleTo(unit.x, unit.y);
