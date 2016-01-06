@@ -209,7 +209,7 @@ public final class MyStrategy implements Strategy {
 		AStar aStar = new AStar(world.getWidth()*5, world.getHeight()*5);
 		// Заполним карту как-то клетками, учитывая преграду
 		// map08 gluck
-		fillMapCarRacing2015(world, aStar);
+		fillMapCarRacing2015(world, aStar,game,self);
 		aStar.calculateRoute(new Cell(myTargetX, myTargetY), new Cell(targetX, targetY));
 		//aStar.printRoute();
 		if (aStar.nextCell() != null )//&& !(myTargetX ==targetX&&targetX == (int)(aStar.nextCell().x/3) || myTargetY ==targetY&&targetY ==(int)(aStar.nextCell().y/3)) )
@@ -386,7 +386,7 @@ public final class MyStrategy implements Strategy {
 
 		if (self.getDurability()>0 &&ReverceMode[carId] <= -20 && move.getEnginePower() > 0 && speedModule <3D && world.getTick() > 200){
 			//myLastRealX=self.getX();myLastRealY=self.getY();
-			ReverceMode[carId] += 250;//+50*abs(distanceToWaypoint/game.getTrackTileSize());
+			ReverceMode[carId] += 150;//+50*abs(distanceToWaypoint/game.getTrackTileSize());
 		}
 			
 		if (self.getDurability()>0 &&(ReverceMode[carId] > -100||speedModule < 3D)&& world.getTick() > 200) {
@@ -436,7 +436,12 @@ public final class MyStrategy implements Strategy {
 		prevTX[carId]=targetX;prevTY[carId]=targetY;prevMX[carId]=myTargetX;prevMY[carId]=myTargetY; prevTXR[carId]=nextWaypointX;prevTYR[carId]=nextWaypointY;
 	}
 
-	private void fillMapCarRacing2015(World world, AStar aStar) {
+	private void fillMapCarRacing2015(World world, AStar aStar, Game game,Car self) {
+//		for (Car car : world.getCars()) {
+//			//if (car.equals(s))	continue;
+//			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5),(int)(car.getY()/game.getTrackTileSize()*5), false));
+//		}
+		
 		for (int x = 0; x < world.getWidth(); x++) {
 			for (int y = 0; y < world.getHeight(); y++) {
 				switch (world.getTilesXY()[x][y]) {
@@ -541,6 +546,15 @@ public final class MyStrategy implements Strategy {
 				
 			}
 		}
+		for (Car car : world.getCars()) {
+			if (car.getId()==self.getId())	continue;
+			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5),(int)(car.getY()/game.getTrackTileSize()*5), true));
+			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5)+1,(int)(car.getY()/game.getTrackTileSize()*5), true));
+			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5)-1,(int)(car.getY()/game.getTrackTileSize()*5), true));
+			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5),(int)(car.getY()/game.getTrackTileSize()*5)+1, true));
+			aStar.cellList.add(new Cell((int)(car.getX()/game.getTrackTileSize()*5),(int)(car.getY()/game.getTrackTileSize()*5)-1 , true));
+		}
+
 	}
 	private void fillMap(AStar aStar,int x, int y,boolean map[]) {
 		for (int i=0;i<5;i++) for (int j=0;j<5;j++) aStar.cellList.add(new Cell(x*5+j, y*5+i, !map[i*5+j]));
